@@ -1,0 +1,21 @@
+
+{
+  "name": "TimeZen - College Lecture Tracker",
+  "short_name": "TimeZen",
+  "description": "Track lectures, schedules, and study materials for AVCOE students",
+  "start_url": "/edutrack/",
+  "scope": "/edutrack/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/edutrack/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": []
+}

@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Admin Panel - TimeZen</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" crossorigin href="/edutrack/assets/admin-BTVVu9Ee.css">
+    <link rel="stylesheet" crossorigin href="/edutrack/assets/style-4xcsJil5.css">
+  </head>
+  <body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Admin Login Page -->
+    <div id="admin-login" class="admin-page active">
+      <div class="admin-login-container">
+        <h1 class="admin-title">
+          Admin Panel<br />
+          <span class="highlight">TimeZen</span>
+        </h1>
+        <p class="admin-subtitle">Enter admin credentials to continue</p>
+        <form class="admin-login-form" onsubmit="handleAdminLogin(event)">
+          <div class="form-group">
+            <label for="admin-username">Username</label>
+            <input
+              type="text"
+              id="admin-username"
+              class="form-input"
+              placeholder="Enter admin username"
+              autocomplete="off"
+            />
+          </div>
+          <div class="form-group">
+            <label for="admin-password">Password</label>
+            <input
+              type="password"
+              id="admin-password"
+              class="form-input"
+              placeholder="Enter admin password"
+            />
+          </div>
+          <button type="submit" class="btn-primary btn-submit">
+            Login
+            <div class="icon">
+              <svg
+                height="24"
+                width="24"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path
+                  d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard - Main Menu -->
+    <div id="admin-dashboard" class="admin-page">
+      <header class="app-header">
+        <h2 class="page-title">Admin Panel</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="admin-menu-grid">
+          <div class="admin-menu-card" onclick="goToAdminPage('schedule-manager')">
+            <div class="menu-icon">📚</div>
+            <div class="menu-title">Set Schedules</div>
+            <div class="menu-description">Manage division schedules and timetables</div>
+          </div>
+
+          <div class="admin-menu-card" onclick="goToAdminPage('post-notice')">
+            <div class="menu-icon">📢</div>
+            <div class="menu-title">Post Notice</div>
+            <div class="menu-description">Send notices and announcements to students</div>
+          </div>
+
+          <div class="admin-menu-card" onclick="goToAdminPage('post-holiday')">
+            <div class="menu-icon">🎉</div>
+            <div class="menu-title">Post Holiday</div>
+            <div class="menu-description">Manage college holidays and breaks</div>
+          </div>
+
+          <div class="admin-menu-card" onclick="goToAdminPage('groq-settings')">
+            <div class="menu-icon">🤖</div>
+            <div class="menu-title">Zen AI Settings</div>
+            <div class="menu-description">Configure Groq API for AI chat</div>
+          </div>
+
+          <div class="admin-menu-card" onclick="goToAdminPage('backpack-manager')">
+            <div class="menu-icon">🎒</div>
+            <div class="menu-title">Backpack</div>
+            <div class="menu-description">Manage division resources and materials</div>
+          </div>
+
+          <div class="admin-menu-card" onclick="goToAdminPage('version-manager')">
+            <div class="menu-icon">🔄</div>
+            <div class="menu-title">Version Control</div>
+            <div class="menu-description">Control app version and force user logout</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Notice Page -->
+    <div id="post-notice" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Post Notice</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <button class="btn-add-notice" onclick="openNoticeModal()">
+          <span style="font-size: 24px; margin-right: 8px;">+</span> Create Notice
+        </button>
+
+        <div class="section-header" style="margin-top: 30px;">
+          <h3>Posted Notices</h3>
+        </div>
+        <div class="notices-list" id="noticesList"></div>
+      </div>
+    </div>
+
+    <!-- Groq API Settings Page -->
+    <div id="groq-settings" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Zen AI Settings</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Groq API Configuration</h3>
+        </div>
+
+        <div class="settings-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 16px; box-shadow: 6px 6px 0px var(--black); padding: 30px; margin-bottom: 20px;">
+          <form onsubmit="handleGroqApiSubmit(event)">
+            <div class="form-group">
+              <label for="groq-api-key">Groq API Key</label>
+              <div style="position: relative;">
+                <input
+                  type="password"
+                  id="groq-api-key"
+                  class="form-input"
+                  placeholder="Enter your Groq API key (gsk_...)"
+                  style="margin-bottom: 10px;"
+                />
+                <span id="api-key-indicator" style="position: absolute; right: 15px; top: 15px; display: none; color: var(--primary-green); font-weight: 700; font-size: 14px;">
+                  ✓ Key Set
+                </span>
+              </div>
+              <small style="color: var(--text-secondary); font-size: 13px; display: block; margin-bottom: 15px;">
+                Get your API key from <a href="https://console.groq.com/keys" target="_blank" style="color: var(--primary-blue);">Groq Console</a>
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="groq-model">AI Model</label>
+              <select id="groq-model" class="form-input" style="margin-bottom: 20px;">
+                <option value="llama-3.3-70b-versatile">Zen-Alpha (Recommended)</option>
+                <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Zen-Beta</option>
+                <option value="llama-3.1-8b-instant">Zen-Gamma</option>
+                <option value="groq/compound">Zen-Omega</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primary btn-submit">
+              Save Configuration
+              <div class="icon">
+                <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="currentColor"></path>
+                </svg>
+              </div>
+            </button>
+          </form>
+        </div>
+
+        <div class="info-card" style="background: var(--primary-blue); color: var(--white); border: var(--border-width) solid var(--black); border-radius: 16px; box-shadow: 6px 6px 0px var(--black); padding: 20px;">
+          <h4 style="margin-top: 0; font-size: 18px;">ℹ️ About Groq API</h4>
+          <p style="margin-bottom: 10px; line-height: 1.6;">Groq provides ultra-fast AI inference for the Zen AI chat feature. Your API key will be securely stored in Firebase and used to power intelligent responses.</p>
+          <p style="margin: 0; font-size: 14px; opacity: 0.9;">Current Status: <span id="groq-status">Not Configured</span></p>
+        </div>
+
+        <div class="section-header" style="margin-top: 30px;">
+          <h3>📊 Token Usage Today</h3>
+        </div>
+
+        <div class="token-usage-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+          <div class="usage-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 12px; box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Zen-Alpha</h4>
+              <span style="font-size: 12px; color: var(--text-secondary);">375/day</span>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--primary-purple); margin-bottom: 8px;" id="usage-zen-alpha">0</div>
+            <div class="progress-bar" style="height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden;">
+              <div id="progress-zen-alpha" style="height: 100%; background: var(--primary-purple); width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <div class="usage-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 12px; box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Zen-Beta</h4>
+              <span style="font-size: 12px; color: var(--text-secondary);">1875/day</span>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--primary-green); margin-bottom: 8px;" id="usage-zen-beta">0</div>
+            <div class="progress-bar" style="height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden;">
+              <div id="progress-zen-beta" style="height: 100%; background: var(--primary-green); width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <div class="usage-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 12px; box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Zen-Gamma</h4>
+              <span style="font-size: 12px; color: var(--text-secondary);">1875/day</span>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--primary-yellow); margin-bottom: 8px;" id="usage-zen-gamma">0</div>
+            <div class="progress-bar" style="height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden;">
+              <div id="progress-zen-gamma" style="height: 100%; background: var(--primary-yellow); width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <div class="usage-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 12px; box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 16px; font-weight: 700;">Zen-Omega</h4>
+              <span style="font-size: 12px; color: var(--text-secondary);">unlimited</span>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--primary-blue); margin-bottom: 8px;" id="usage-zen-omega">0</div>
+            <div class="progress-bar" style="height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden;">
+              <div id="progress-zen-omega" style="height: 100%; background: var(--primary-blue); width: 100%; transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backpack Manager - Division Cards -->
+    <div id="backpack-manager" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Backpack</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Select Division</h3>
+        </div>
+        <div class="division-grid" id="backpackDivisionGrid"></div>
+      </div>
+    </div>
+
+    <!-- Backpack Division Detail Page -->
+    <div id="backpack-division-detail" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('backpack-manager')">
+          ← Back
+        </button>
+        <h2 class="page-title" id="backpackDivisionTitle">Division A - Backpack</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Subjects</h3>
+          <button class="btn-add-small" onclick="openBackpackSubjectModal()">
+            + Add Subject
+          </button>
+        </div>
+        <div class="subjects-list" id="backpackSubjectsList"></div>
+      </div>
+    </div>
+
+    <!-- Subject Materials Page -->
+    <div id="subject-materials-page" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('backpack-division-detail')">
+          ← Back
+        </button>
+        <h2 class="page-title" id="subjectMaterialsPageTitle">Subject Materials</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <button class="btn-add-notice" onclick="openAddMaterialModal()">
+          <span style="font-size: 24px; margin-right: 8px;">+</span> Add Material
+        </button>
+
+        <div class="section-header" style="margin-top: 30px;">
+          <h3>Materials</h3>
+        </div>
+        <div class="notices-list" id="subjectMaterialsList"></div>
+      </div>
+    </div>
+
+    <!-- Version Manager Page -->
+    <div id="version-manager" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Version Control</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>App Version Control</h3>
+        </div>
+
+        <div class="settings-card" style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 16px; box-shadow: 6px 6px 0px var(--black); padding: 30px; margin-bottom: 20px;">
+          <form onsubmit="handleVersionUpdate(event)">
+            <div class="form-group">
+              <label for="app-version">Current App Version</label>
+              <div style="position: relative;">
+                <input
+                  type="text"
+                  id="app-version"
+                  class="form-input"
+                  placeholder="e.g., 1.0.0, 2.0.1, update-jan-2024"
+                  style="margin-bottom: 10px;"
+                />
+              </div>
+              <small style="color: var(--text-secondary); font-size: 13px; display: block; margin-bottom: 15px;">
+                Change this version number to force all users to logout and refresh their app
+              </small>
+            </div>
+
+            <button type="submit" class="btn-primary btn-submit">
+              Update Version
+              <div class="icon">
+                <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="currentColor"></path>
+                </svg>
+              </div>
+            </button>
+          </form>
+        </div>
+
+        <div class="info-card" style="background: var(--primary-yellow); color: var(--black); border: var(--border-width) solid var(--black); border-radius: 16px; box-shadow: 6px 6px 0px var(--black); padding: 20px; margin-bottom: 20px;">
+          <h4 style="margin-top: 0; font-size: 18px;">⚠️ How Version Control Works</h4>
+          <ul style="margin-bottom: 10px; line-height: 1.8; padding-left: 20px;">
+            <li>When you change the version number, all users will be logged out automatically on their next app visit</li>
+            <li>Users can log back in immediately after logout</li>
+            <li>Device tracking is preserved even after logout</li>
+            <li>Version number can be anything: 1.0.0, 2.0.1, update-jan-2024, etc.</li>
+          </ul>
+        </div>
+
+        <div class="info-card" style="background: var(--primary-blue); color: var(--white); border: var(--border-width) solid var(--black); border-radius: 16px; box-shadow: 6px 6px 0px var(--black); padding: 20px;">
+          <h4 style="margin-top: 0; font-size: 18px;">📋 When to Use Version Control</h4>
+          <ul style="margin-bottom: 0; line-height: 1.8; padding-left: 20px;">
+            <li><strong>Security updates:</strong> Force logout after fixing security issues</li>
+            <li><strong>Major updates:</strong> Ensure all users get new features</li>
+            <li><strong>Bug fixes:</strong> Clear old cached data that might cause issues</li>
+            <li><strong>Data structure changes:</strong> Reset user data when changing storage format</li>
+          </ul>
+        </div>
+
+        <div class="section-header" style="margin-top: 30px;">
+          <h3>📊 Version Status</h3>
+        </div>
+
+        <div style="background: var(--white); border: var(--border-width) solid var(--black); border-radius: 12px; box-shadow: 4px 4px 0px var(--black); padding: 20px;">
+          <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+            <strong>Current Version:</strong> <span id="current-version-display" style="color: var(--primary-purple); font-weight: 700; font-size: 20px;">Not Set</span>
+          </p>
+          <p style="margin: 15px 0 0 0; font-size: 14px; color: var(--text-secondary);">
+            Last updated: <span id="version-last-updated">Never</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Post Holiday Page -->
+    <div id="post-holiday" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Post Holiday</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <button class="btn-add-notice" onclick="openHolidayModal()">
+          <span style="font-size: 24px; margin-right: 8px;">+</span> Create Holiday
+        </button>
+
+        <div class="section-header" style="margin-top: 30px;">
+          <h3>Posted Holidays</h3>
+        </div>
+        <div class="notices-list" id="holidaysList"></div>
+      </div>
+    </div>
+
+    <!-- Schedule Manager - Division Cards -->
+    <div id="schedule-manager" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('admin-dashboard')">
+          ← Back
+        </button>
+        <h2 class="page-title">Set Schedules</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Select Division</h3>
+        </div>
+        <div class="division-grid" id="divisionGrid"></div>
+      </div>
+    </div>
+
+    <!-- Division Detail Page - Subjects Management -->
+    <div id="division-detail" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('schedule-manager')">
+          ← Back
+        </button>
+        <h2 class="page-title" id="divisionTitle">Division A</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Subjects & Teachers</h3>
+          <button class="btn-add-small" onclick="openSubjectModal()">
+            + Add Subject
+          </button>
+        </div>
+        <div class="subjects-list" id="subjectsList"></div>
+
+        <button class="btn-add-schedule" onclick="goToScheduleSetup()">
+          Add Schedule
+        </button>
+      </div>
+    </div>
+
+    <!-- Day Selection Page -->
+    <div id="day-selection" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="backToDivisionDetail()">
+          ← Back
+        </button>
+        <h2 class="page-title">Select Day</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="day-grid" id="dayGrid"></div>
+      </div>
+    </div>
+
+    <!-- Day Schedule Page -->
+    <div id="day-schedule" class="admin-page">
+      <header class="app-header">
+        <button class="btn-back" onclick="goToAdminPage('day-selection')">
+          ← Back
+        </button>
+        <h2 class="page-title" id="dayScheduleTitle">Monday Schedule</h2>
+        <button class="btn-logout" onclick="handleAdminLogout()">
+          Logout
+        </button>
+      </header>
+
+      <div class="container">
+        <button class="btn-add-schedule" onclick="openTimeSlotModal()">
+          + Add Schedule
+        </button>
+
+        <div class="schedule-timeline" id="scheduleTimeline"></div>
+      </div>
+    </div>
+
+    <!-- Subject Modal -->
+    <div class="modal-overlay" id="subjectModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Add Subject</h3>
+          <button class="modal-close" onclick="closeSubjectModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleSubjectSubmit(event)">
+          <div class="form-group">
+            <label for="subject-name">Subject Name</label>
+            <input
+              type="text"
+              id="subject-name"
+              class="form-input"
+              placeholder="e.g., Mathematics"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="subject-teacher">Teacher Name</label>
+            <input
+              type="text"
+              id="subject-teacher"
+              class="form-input"
+              placeholder="e.g., Dr. Smith"
+              required
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeSubjectModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Add Subject
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Time Slot Modal -->
+    <div class="modal-overlay" id="timeSlotModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Add Time Slot</h3>
+          <button class="modal-close" onclick="closeTimeSlotModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleTimeSlotSubmit(event)">
+          <div class="form-group">
+            <label for="slot-start-time">Start Time</label>
+            <input
+              type="time"
+              id="slot-start-time"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="slot-end-time">End Time</label>
+            <input
+              type="time"
+              id="slot-end-time"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="slot-subject">Subject</label>
+            <select id="slot-subject" class="form-input" required>
+              <option value="">Select Subject</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="slot-color">Card Color</label>
+            <select id="slot-color" class="form-input" required>
+              <option value="">Select Color</option>
+              <option value="purple">Purple (Default)</option>
+              <option value="green">Green</option>
+              <option value="red">Red (Lunch Break)</option>
+            </select>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeTimeSlotModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Add Time Slot
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Backpack Subject Modal -->
+    <div class="modal-overlay" id="backpackSubjectModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Add Subject</h3>
+          <button class="modal-close" onclick="closeBackpackSubjectModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleBackpackSubjectSubmit(event)">
+          <div class="form-group">
+            <label for="backpack-subject-name">Subject Name</label>
+            <input
+              type="text"
+              id="backpack-subject-name"
+              class="form-input"
+              placeholder="e.g., Mathematics"
+              required
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeBackpackSubjectModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Add Subject
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Material Modal -->
+    <div class="modal-overlay" id="addMaterialModal">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>Add Study Material</h3>
+          <button class="modal-close" onclick="closeAddMaterialModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleAddMaterialSubmit(event)">
+          <div class="form-group">
+            <label for="material-title">Material Title</label>
+            <input
+              type="text"
+              id="material-title"
+              class="form-input"
+              placeholder="Enter material title"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="material-description">Description</label>
+            <textarea
+              id="material-description"
+              class="form-input"
+              placeholder="Describe this material..."
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="material-file">Upload File (PDF, Image, Audio, etc.)</label>
+            <input
+              type="file"
+              id="material-file"
+              class="form-input"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,image/*,audio/*,video/*"
+              required
+            />
+            <small style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; display: block;">
+              Supported: PDF, Word, PowerPoint, Images, Audio, Video (Max 10MB)
+            </small>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeAddMaterialModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Upload Material
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Holiday Modal -->
+    <div class="modal-overlay" id="holidayModal">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>Create Holiday</h3>
+          <button class="modal-close" onclick="closeHolidayModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleHolidaySubmit(event)">
+          <div class="form-group">
+            <label for="holiday-name">Holiday Name</label>
+            <input
+              type="text"
+              id="holiday-name"
+              class="form-input"
+              placeholder="Enter holiday name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="holiday-start-date">Start Date</label>
+            <input
+              type="date"
+              id="holiday-start-date"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="holiday-end-date">End Date (Optional)</label>
+            <input
+              type="date"
+              id="holiday-end-date"
+              class="form-input"
+            />
+            <small style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; display: block;">
+              Leave empty if holiday is only for one day
+            </small>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeHolidayModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Post Holiday
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    
+
+    <!-- Notice Modal -->
+    <div class="modal-overlay" id="noticeModal">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>Create Notice</h3>
+          <button class="modal-close" onclick="closeNoticeModal()">✕</button>
+        </div>
+        <form class="modal-form" onsubmit="handleNoticeSubmit(event)">
+          <div class="form-group">
+            <label for="notice-title">Notice Title</label>
+            <input
+              type="text"
+              id="notice-title"
+              class="form-input"
+              placeholder="Enter notice title"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="notice-content">Notice Content</label>
+            <textarea
+              id="notice-content"
+              class="form-input"
+              placeholder="Write your notice here..."
+              rows="6"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="notice-attachment">Attach Image/File (Optional)</label>
+            <input
+              type="file"
+              id="notice-attachment"
+              class="form-input"
+              accept="image/*,.pdf,.doc,.docx"
+            />
+            <small style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; display: block;">
+              Supported: Images, PDF, DOC files (Max 5MB)
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="notice-priority">Priority</label>
+            <select id="notice-priority" class="form-input" required>
+              <option value="">Select Priority</option>
+              <option value="normal">Normal - Bell notification only</option>
+              <option value="holiday">Holiday - Show popup with pleasant colors</option>
+              <option value="urgent">Urgent - Show important popup</option>
+            </select>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="modal-btn modal-btn-cancel"
+              onclick="closeNoticeModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="modal-btn modal-btn-confirm">
+              Post Notice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="admin-script.js"></script>
+  </body>
+</html>
