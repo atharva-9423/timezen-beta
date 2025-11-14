@@ -1,3 +1,6 @@
+// Flag to track if schedule modal has been shown on this page load
+let scheduleModalShownOnLoad = false;
+
 function goToPage(pageName, addToHistory = true) {
   const pages = document.querySelectorAll('.page');
   const targetPage = document.getElementById(pageName + '-page');
@@ -140,6 +143,11 @@ function goToPage(pageName, addToHistory = true) {
   if (addToHistory && pageName !== 'master-timetable') {
     history.pushState({ page: pageName }, '', `#${pageName}`);
   }
+
+  // Emit custom event after navigation is complete
+  window.dispatchEvent(new CustomEvent('page:navigated', { 
+    detail: { page: pageName } 
+  }));
 }
 
 // Handle browser back/forward navigation
@@ -2913,14 +2921,6 @@ document.addEventListener('DOMContentLoaded', function() {
   loadDivisionSubjects();
   initializeFCM();
   loadGroqConfig();
-  
-  // Show today's schedule modal only on page reload if user is on home page
-  const userData = localStorage.getItem('userSession');
-  if (userData && window.location.hash === '#home') {
-    setTimeout(() => {
-      showScheduleModal();
-    }, 500);
-  }
 });
 
 // Initialize immediately (in case DOMContentLoaded already fired)
@@ -2935,14 +2935,6 @@ if (document.readyState !== 'loading') {
   loadDivisionSubjects();
   initializeFCM();
   loadGroqConfig();
-  
-  // Show today's schedule modal only on page reload if user is on home page
-  const userData = localStorage.getItem('userSession');
-  if (userData && window.location.hash === '#home') {
-    setTimeout(() => {
-      showScheduleModal();
-    }, 500);
-  }
 }
 
 // Close notification dropdown when clicking outside
@@ -2952,6 +2944,20 @@ document.addEventListener('click', function(event) {
 
   if (notificationDropdown && !notificationBtn?.contains(event.target) && !notificationDropdown.contains(event.target)) {
     closeNotifications();
+  }
+});
+
+// Listen for navigation events to show schedule modal on home page
+window.addEventListener('page:navigated', function(event) {
+  const userData = localStorage.getItem('userSession');
+  
+  // Show schedule modal when navigating to home page with active session
+  // Only show once per page load
+  if (event.detail.page === 'home' && userData && !scheduleModalShownOnLoad) {
+    scheduleModalShownOnLoad = true;
+    setTimeout(() => {
+      showScheduleModal();
+    }, 500);
   }
 });
 
