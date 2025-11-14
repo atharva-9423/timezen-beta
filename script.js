@@ -1078,11 +1078,10 @@ async function registerServiceWorker() {
         });
       });
 
-      // Cache user's division data for offline access
+      // Request to cache user's division data for offline access
       const userData = localStorage.getItem('userSession');
       if (userData) {
         const user = JSON.parse(userData);
-        // Request to cache division-specific data
         if (registration.active) {
           registration.active.postMessage({
             type: 'CACHE_URLS',
@@ -3452,30 +3451,59 @@ Remember: Quality and accuracy are paramount. Take time to think through problem
 // Function to open download links in system browser (for WebView compatibility)
 function openInSystemBrowser(event, url) {
   event.preventDefault();
-  
+
   // Try to open in system browser using various methods
   // Method 1: Try Android WebView interface
   if (typeof Android !== 'undefined' && Android.openInBrowser) {
     Android.openInBrowser(url);
     return;
   }
-  
+
   // Method 2: Try iOS WebView interface
   if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
     window.webkit.messageHandlers.openInBrowser.postMessage(url);
     return;
   }
-  
+
   // Method 3: Use window.open with _system target (works in many WebView wrappers)
   const opened = window.open(url, '_system');
-  
+
   // Method 4: Fallback to _blank if _system doesn't work
   if (!opened || opened.closed || typeof opened.closed === 'undefined') {
     window.open(url, '_blank');
   }
 }
 
+// Download file for Android WebView (handles blob URLs)
+async function downloadFileForAndroid(blob, filename) {
+  if (typeof Android !== 'undefined' && Android.downloadFile) {
+    try {
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        const base64data = reader.result.split(',')[1];
+        Android.downloadFile(base64data, filename, blob.type);
+      };
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Error downloading file for Android:', error);
+      // Fallback to regular download
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+  } else {
+    // Regular browser download
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+}
+
 window.openInSystemBrowser = openInSystemBrowser;
+window.downloadFileForAndroid = downloadFileForAndroid;
 
     await trackTokenUsage(modelName);
 
@@ -3497,7 +3525,8 @@ window.openInSystemBrowser = openInSystemBrowser;
 function getTodayIST() {
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000;
-  const istTime = new Date(now.getTime() + istOffset);
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  const istTime = new Date(utcTime + istOffset);
   return istTime;
 }
 
@@ -3625,8 +3654,87 @@ function escapeHtml(text) {
   return div.innerHTML.replace(/\n/g, '<br>');
 }
 
+// Function to open download links in system browser (for WebView compatibility)
+function openInSystemBrowser(event, url) {
+  event.preventDefault();
+
+  // Try to open in system browser using various methods
+  // Method 1: Try Android WebView interface
+  if (typeof Android !== 'undefined' && Android.openInBrowser) {
+    Android.openInBrowser(url);
+    return;
+  }
+
+  // Method 2: Try iOS WebView interface
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
+    window.webkit.messageHandlers.openInBrowser.postMessage(url);
+    return;
+  }
+
+  // Method 3: Use window.open with _system target (works in many WebView wrappers)
+  const opened = window.open(url, '_system');
+
+  // Method 4: Fallback to _blank if _system doesn't work
+  if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+    window.open(url, '_blank');
+  }
+}
+
+// Download file for Android WebView (handles blob URLs)
+async function downloadFileForAndroid(blob, filename) {
+  if (typeof Android !== 'undefined' && Android.downloadFile) {
+    try {
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        const base64data = reader.result.split(',')[1];
+        Android.downloadFile(base64data, filename, blob.type);
+      };
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error('Error downloading file for Android:', error);
+      // Fallback to regular download
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+  } else {
+    // Regular browser download
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+}
+
+// Function to download a note
+function downloadNote(noteId) {
+  const note = notes.find(n => n.id === noteId);
+  if (!note) return;
+
+  const blob = new Blob([note.content], { type: 'text/plain' });
+  const filename = `${note.title}.txt`;
+
+  // Check if running in Android WebView
+  if (typeof Android !== 'undefined' && Android.downloadFile) {
+    downloadFileForAndroid(blob, filename);
+  } else {
+    // Regular browser download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
 window.sendZenAIMessage = sendZenAIMessage;
 window.sendSuggestion = sendSuggestion;
 window.clearZenAIChat = clearZenAIChat;
 window.handleZenAIKeyPress = handleZenAIKeyPress;
 window.handleZenAIPaste = handleZenAIPaste;
+window.openInSystemBrowser = openInSystemBrowser;
+window.downloadFileForAndroid = downloadFileForAndroid;
+window.downloadNote = downloadNote;
