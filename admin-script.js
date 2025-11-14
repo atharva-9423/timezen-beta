@@ -1572,33 +1572,49 @@ async function handleAddMaterialSubmit(event) {
   try {
     showToast('Uploading material...', 'info');
 
-    // Convert file to base64
-    const fileData = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
     const materialId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    const materialRef = database.ref(`divisions/${currentBackpackDivision}/studyMaterials/${materialId}`);
+    
+    // Upload file to Firebase Storage
+    const storageRef = storage.ref(`studyMaterials/${currentBackpackDivision}/${materialId}/${file.name}`);
+    const uploadTask = storageRef.put(file);
 
-    await materialRef.set({
-      id: materialId,
-      title: title,
-      description: description,
-      subjectId: currentSubjectId,
-      subjectName: currentSubjectName,
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size,
-      fileUrl: fileData,
-      timestamp: Date.now()
-    });
+    // Monitor upload progress
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload progress:', progress + '%');
+        showToast(`Uploading... ${Math.round(progress)}%`, 'info');
+      },
+      (error) => {
+        console.error('Upload error:', error);
+        showToast('Upload failed: ' + error.message, 'error');
+      },
+      async () => {
+        // Upload completed successfully, get download URL
+        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+        console.log('File uploaded, download URL:', downloadURL);
 
-    closeAddMaterialModal();
-    await loadSubjectMaterials();
-    showToast('Material uploaded successfully!', 'success');
+        // Save material metadata to database with HTTP/HTTPS URL
+        const materialRef = database.ref(`divisions/${currentBackpackDivision}/studyMaterials/${materialId}`);
+
+        await materialRef.set({
+          id: materialId,
+          title: title,
+          description: description,
+          subjectId: currentSubjectId,
+          subjectName: currentSubjectName,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          fileUrl: downloadURL, // This is now an HTTP/HTTPS URL
+          timestamp: Date.now()
+        });
+
+        closeAddMaterialModal();
+        await loadSubjectMaterials();
+        showToast('Material uploaded successfully!', 'success');
+      }
+    );
   } catch (error) {
     console.error('Error uploading material:', error);
     showToast('Error uploading material', 'error');
