@@ -1068,92 +1068,6 @@ async function registerServiceWorker() {
   }
 }
 
-// Pull to Refresh Functionality
-let pullToRefreshStartY = 0;
-let pullToRefreshCurrentY = 0;
-let pullToRefreshDistance = 0;
-let isPulling = false;
-let isRefreshing = false;
-
-function initPullToRefresh() {
-  const indicator = document.createElement('div');
-  indicator.className = 'pull-to-refresh-indicator';
-  indicator.innerHTML = '<i class="ph ph-arrow-down"></i>';
-  document.body.appendChild(indicator);
-
-  let startY = 0;
-  let currentY = 0;
-
-  document.addEventListener('touchstart', (e) => {
-    if (isRefreshing) return;
-    
-    // Only trigger if at top of page
-    if (window.scrollY === 0) {
-      startY = e.touches[0].clientY;
-      isPulling = true;
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    if (!isPulling || isRefreshing) return;
-
-    currentY = e.touches[0].clientY;
-    pullToRefreshDistance = currentY - startY;
-
-    if (pullToRefreshDistance > 0 && window.scrollY === 0) {
-      // Show indicator based on pull distance
-      const normalizedDistance = Math.min(pullToRefreshDistance, 150);
-      const progress = normalizedDistance / 150;
-      
-      indicator.style.top = `${-80 + (100 * progress)}px`;
-      indicator.style.transform = `translateX(-50%) rotate(${360 * progress}deg)`;
-
-      if (pullToRefreshDistance > 80) {
-        indicator.classList.add('ready');
-      } else {
-        indicator.classList.remove('ready');
-      }
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchend', () => {
-    if (!isPulling || isRefreshing) return;
-
-    isPulling = false;
-
-    if (pullToRefreshDistance > 80) {
-      // Trigger refresh
-      isRefreshing = true;
-      indicator.classList.add('active', 'refreshing');
-      indicator.classList.remove('ready');
-      
-      performRefresh().then(() => {
-        setTimeout(() => {
-          indicator.classList.remove('active', 'refreshing');
-          indicator.style.top = '-80px';
-          indicator.style.transform = 'translateX(-50%)';
-          isRefreshing = false;
-        }, 500);
-      });
-    } else {
-      // Reset indicator
-      indicator.style.top = '-80px';
-      indicator.style.transform = 'translateX(-50%)';
-      indicator.classList.remove('ready');
-    }
-
-    pullToRefreshDistance = 0;
-  });
-}
-
-async function performRefresh() {
-  // Small delay to show the refresh animation
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  // Reload the entire page
-  window.location.reload();
-}
-
 function updateMainProfilePicture() {
   const profilePhoto = localStorage.getItem('profilePhoto');
   const mainProfilePic = document.querySelector('.profile-pic');
@@ -2999,7 +2913,6 @@ document.addEventListener('DOMContentLoaded', function() {
   loadDivisionSubjects();
   initializeFCM();
   loadGroqConfig();
-  initPullToRefresh();
   
   // Show today's schedule modal only on page reload if user is on home page
   const userData = localStorage.getItem('userSession');
@@ -3022,7 +2935,6 @@ if (document.readyState !== 'loading') {
   loadDivisionSubjects();
   initializeFCM();
   loadGroqConfig();
-  initPullToRefresh();
   
   // Show today's schedule modal only on page reload if user is on home page
   const userData = localStorage.getItem('userSession');
