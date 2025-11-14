@@ -2916,7 +2916,7 @@ function viewUncategorizedMaterials() {
   }, 100);
 }
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', async function(event) {
   const downloadBtn = event.target.closest('.study-material-download');
   if (downloadBtn) {
     event.preventDefault();
@@ -2924,35 +2924,15 @@ document.addEventListener('click', function(event) {
     const fileName = downloadBtn.getAttribute('data-file-name');
     
     if (fileUrl && fileName) {
-      console.log('Download requested:', fileName, fileUrl);
-      
-      // Check if URL is a data URL (base64) or blob URL
-      const isDataUrl = fileUrl.startsWith('data:');
-      const isBlobUrl = fileUrl.startsWith('blob:');
-      const isHttpUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://');
+      console.log('Download requested:', fileName, fileUrl.substring(0, 80));
       
       // Check if running in Android WebView
       if (typeof window.Android !== 'undefined' && window.Android.download) {
-        // Use Android bridge for WebView
+        // Use Android bridge for WebView - it handles ALL URL types by opening in Chrome
         try {
-          console.log('Using Android bridge for download');
-          
-          // If it's an HTTP/HTTPS URL, use Android download manager (works with Firebase Storage URLs)
-          if (isHttpUrl) {
-            // HTTP/HTTPS URL (including Firebase Storage URLs) - use Android download manager
-            window.Android.download(fileUrl);
-            showToast(`Downloading ${fileName}...`, 'success');
-          } else if (isDataUrl || isBlobUrl) {
-            // Legacy support for old data URLs - open in external browser
-            console.log('Legacy data/blob URL detected, please re-upload this file for better compatibility');
-            showToast('This file uses an old format. Opening in browser...', 'warning');
-            // Use regular download which will handle it in the WebView's default way
-            downloadFileRegular(fileUrl, fileName);
-          } else {
-            // Unknown URL type
-            console.log('Unknown URL type:', fileUrl.substring(0, 50));
-            showToast('Unable to download this file format', 'error');
-          }
+          console.log('Using Android bridge for download:', fileUrl.substring(0, 50));
+          window.Android.download(fileUrl);
+          showToast(`Downloading ${fileName}...`, 'success');
         } catch (error) {
           console.error('Android download failed:', error);
           showToast('Download failed: ' + error.message, 'error');
