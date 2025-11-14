@@ -21,6 +21,9 @@ function goToPage(pageName, addToHistory = true) {
 
   // Handle Zen AI page with loading animation
   if (pageName === 'zen-ai') {
+    // Lazy load Groq config when accessing Zen AI
+    loadGroqConfig();
+
     // Save current chat before navigating away
     if (currentChatId && zenAIChatHistory.length > 0) {
       saveCurrentChat();
@@ -59,7 +62,14 @@ function goToPage(pageName, addToHistory = true) {
   }
 
   if (pageName === 'study-materials') {
+    // Lazy load study materials when accessing this page
     loadStudyMaterials();
+  }
+
+  if (pageName === 'study-materials-subjects') {
+    // Lazy load study materials and subjects when accessing this page
+    loadStudyMaterials();
+    loadDivisionSubjects();
   }
 
   // Handle profile slide transitions
@@ -235,11 +245,11 @@ async function playIntroAnimation() {
 
   // Load custom intro music from Firebase
   let audioSource = 'attached_assets/lv_0_20251113200122_1763044463179.mp3'; // Default
-  
+
   try {
     const musicRef = database.ref('config/introMusic');
     const snapshot = await musicRef.once('value');
-    
+
     if (snapshot.exists()) {
       const music = snapshot.val();
       audioSource = music.audioData;
@@ -259,7 +269,7 @@ async function playIntroAnimation() {
     const fadeOutInterval = 50; // Update every 50ms
     const steps = fadeOutDuration / fadeOutInterval;
     const volumeDecrement = themeAudio.volume / steps;
-    
+
     const fadeOut = setInterval(() => {
       if (themeAudio.volume > volumeDecrement) {
         themeAudio.volume = Math.max(0, themeAudio.volume - volumeDecrement);
@@ -619,7 +629,7 @@ function handleAuthentication(event) {
 
   // Get temporary user data from sessionStorage
   const tempUserData = JSON.parse(sessionStorage.getItem('tempUserData') || '{}');
-  
+
   // Add enrollment number to user data and store in localStorage
   const userData = { ...tempUserData, enrNumber };
   localStorage.setItem('userSession', JSON.stringify(userData));
@@ -678,12 +688,12 @@ function getCurrentDayCode() {
 function showScheduleModal() {
   const modal = document.getElementById('scheduleModal');
   const userData = JSON.parse(localStorage.getItem('userSession') || '{}');
-  
+
   // Only show modal if user is logged in
   if (!userData.division) {
     return;
   }
-  
+
   modal.classList.add('active');
   loadTodaySchedule();
 }
@@ -700,7 +710,7 @@ async function loadTodaySchedule() {
   if (!container) return;
 
   const userData = JSON.parse(localStorage.getItem('userSession') || '{}');
-  
+
   if (!userData.division) {
     container.innerHTML = '<div class="schedule-empty">Please login to view schedule</div>';
     return;
@@ -709,7 +719,7 @@ async function loadTodaySchedule() {
   const dayCode = getCurrentDayCode();
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = days[new Date().getDay()];
-  
+
   // Show loading state
   container.innerHTML = '<div class="schedule-loading">Loading schedule...</div>';
 
@@ -737,7 +747,7 @@ async function loadTodaySchedule() {
       );
 
       let html = `<div class="schedule-day-info">${dayName}</div>`;
-      
+
       for (const schedule of schedulesArray) {
         const subjectRef = database.ref(`divisions/${userData.division}/subjects/${schedule.subjectId}`);
         const subjectSnapshot = await subjectRef.once('value');
@@ -788,9 +798,21 @@ document.addEventListener('click', function(event) {
 });
 
 // Centralized function to clean up Firebase listeners
+function resetHomeLazyState() {
+  // Reset lazy loading flags
+  homePageDataLoaded = false;
+  scheduleModalShownOnLoad = false;
+
+  // Clear countdown interval
+  if (countdownIntervalId) {
+    clearInterval(countdownIntervalId);
+    countdownIntervalId = null;
+  }
+}
+
 function cleanupFirebaseListeners() {
   const userData = JSON.parse(localStorage.getItem('userSession') || '{}');
-  
+
   // Detach study materials listeners
   if (studyMaterialsListenerInitialized && userData.division) {
     database.ref(`divisions/${userData.division}/studyMaterials`).off();
@@ -822,6 +844,9 @@ function confirmLogout() {
 
   // Clean up Firebase listeners
   cleanupFirebaseListeners();
+
+  // Reset lazy loading state
+  resetHomeLazyState();
 
   // Clear stored session data
   localStorage.removeItem('userSession');
@@ -924,6 +949,9 @@ function checkAppVersion() {
           // Clean up Firebase listeners before clearing session
           cleanupFirebaseListeners();
 
+          // Reset lazy loading state
+          resetHomeLazyState();
+
           // Clear all localStorage except deviceId (to keep device tracking)
           const deviceId = localStorage.getItem('deviceId');
           localStorage.clear();
@@ -1023,7 +1051,7 @@ function initializeSession() {
       welcomePage.classList.add('active');
     }
   }
-  
+
   // Mark body as initialized to show pages
   document.body.classList.add('initialized');
 }
@@ -1035,9 +1063,9 @@ async function registerServiceWorker() {
       const registration = await navigator.serviceWorker.register('/edutrack/service-worker.js', {
         scope: '/edutrack/'
       });
-      
+
       console.log('[App] Service Worker registered successfully:', registration.scope);
-      
+
       // Handle updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
@@ -1049,7 +1077,7 @@ async function registerServiceWorker() {
           }
         });
       });
-      
+
       // Cache user's division data for offline access
       const userData = localStorage.getItem('userSession');
       if (userData) {
@@ -1066,7 +1094,7 @@ async function registerServiceWorker() {
           });
         }
       }
-      
+
       return registration;
     } catch (error) {
       console.error('[App] Service Worker registration failed:', error);
@@ -1370,19 +1398,19 @@ async function updateNextClassCountdown() {
 }
 
 function initDateTime() {
+  // Only update clock and calendar on initial load (no Firebase calls)
   updateLiveClock();
   updateWeekCalendar();
-  updateNextClassCountdown();
 
+  // Set up clock update interval
   setInterval(() => {
     updateLiveClock();
   }, 1000);
 
-  setInterval(() => {
-    updateNextClassCountdown();
-  }, 30000);
-
+  // Set up calendar update interval
   setInterval(updateWeekCalendar, 60000);
+
+  // Note: updateNextClassCountdown will be called lazily when home page is visible
 }
 
 async function checkIfHoliday(dayKey, dateOverride = null) {
@@ -2819,7 +2847,7 @@ function viewSubjectMaterials(subject) {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <a href="${material.fileUrl}" download="${material.fileName}" class="study-material-download">
+          <a href="${material.fileUrl}" onclick="openInSystemBrowser(event, '${material.fileUrl}')" class="study-material-download">
             <i class="ph ph-download-simple"></i> Download ${material.fileName}
           </a>
         </div>
@@ -2877,7 +2905,7 @@ function viewUncategorizedMaterials() {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <a href="${material.fileUrl}" download="${material.fileName}" class="study-material-download">
+          <a href="${material.fileUrl}" onclick="openInSystemBrowser(event, '${material.fileUrl}')" class="study-material-download">
             <i class="ph ph-download-simple"></i> Download ${material.fileName}
           </a>
         </div>
@@ -2910,17 +2938,16 @@ initializeSession();
 // Register Service Worker
 registerServiceWorker();
 
-// Initialize on page load
+// Initialize on page load - ONLY load essential functions (no Firebase calls)
 document.addEventListener('DOMContentLoaded', function() {
   initTheme();
   checkUserSession();
-  initDateTime();
-  loadTimelineSchedule();
-  checkAndDisplayNotices();
-  loadStudyMaterials();
-  loadDivisionSubjects();
-  initializeFCM();
-  loadGroqConfig();
+  initDateTime(); // Only clock/calendar, no Firebase
+
+  // Defer FCM initialization
+  setTimeout(() => {
+    initializeFCM();
+  }, 2000);
 });
 
 // Initialize immediately (in case DOMContentLoaded already fired)
@@ -2928,13 +2955,12 @@ if (document.readyState !== 'loading') {
   registerServiceWorker();
   initTheme();
   checkUserSession();
-  initDateTime();
-  loadTimelineSchedule();
-  checkAndDisplayNotices();
-  loadStudyMaterials();
-  loadDivisionSubjects();
-  initializeFCM();
-  loadGroqConfig();
+  initDateTime(); // Only clock/calendar, no Firebase
+
+  // Defer FCM initialization
+  setTimeout(() => {
+    initializeFCM();
+  }, 2000);
 }
 
 // Close notification dropdown when clicking outside
@@ -2947,10 +2973,40 @@ document.addEventListener('click', function(event) {
   }
 });
 
+// Track if home page data has been loaded
+let homePageDataLoaded = false;
+let countdownIntervalId = null;
+
 // Listen for navigation events to show schedule modal on home page
 window.addEventListener('page:navigated', function(event) {
   const userData = localStorage.getItem('userSession');
-  
+
+  // Load home page data when navigating to home (lazy loading)
+  if (event.detail.page === 'home' && userData && !homePageDataLoaded) {
+    homePageDataLoaded = true;
+
+    // Defer data loading slightly to let the UI render first
+    const loadHomeData = () => {
+      // Load notifications
+      checkAndDisplayNotices();
+
+      // Load next class countdown
+      updateNextClassCountdown();
+
+      // Start countdown interval (every 30 seconds)
+      countdownIntervalId = setInterval(() => {
+        updateNextClassCountdown();
+      }, 30000);
+    };
+
+    // Use requestIdleCallback if available, otherwise use setTimeout
+    if (window.requestIdleCallback) {
+      requestIdleCallback(loadHomeData, { timeout: 500 });
+    } else {
+      setTimeout(loadHomeData, 100);
+    }
+  }
+
   // Show schedule modal when navigating to home page with active session
   // Only show once per page load
   if (event.detail.page === 'home' && userData && !scheduleModalShownOnLoad) {
@@ -3390,6 +3446,36 @@ Remember: Quality and accuracy are paramount. Take time to think through problem
       // For complex questions that got a short "I can't help" response, try to be more helpful
       aiResponse += "\n\n💡 **Tip**: For complex problems, try breaking them down into smaller parts, or let me know what specific aspect you'd like help with!";
     }
+
+
+
+// Function to open download links in system browser (for WebView compatibility)
+function openInSystemBrowser(event, url) {
+  event.preventDefault();
+  
+  // Try to open in system browser using various methods
+  // Method 1: Try Android WebView interface
+  if (typeof Android !== 'undefined' && Android.openInBrowser) {
+    Android.openInBrowser(url);
+    return;
+  }
+  
+  // Method 2: Try iOS WebView interface
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
+    window.webkit.messageHandlers.openInBrowser.postMessage(url);
+    return;
+  }
+  
+  // Method 3: Use window.open with _system target (works in many WebView wrappers)
+  const opened = window.open(url, '_system');
+  
+  // Method 4: Fallback to _blank if _system doesn't work
+  if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+    window.open(url, '_blank');
+  }
+}
+
+window.openInSystemBrowser = openInSystemBrowser;
 
     await trackTokenUsage(modelName);
 
