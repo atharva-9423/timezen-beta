@@ -2924,19 +2924,22 @@ document.addEventListener('click', function(event) {
     const fileName = downloadBtn.getAttribute('data-file-name');
     
     if (fileUrl && fileName) {
+      console.log('Download requested:', fileName, fileUrl);
+      
       // Check if running in Android WebView
-      if (window.Android && window.Android.download) {
+      if (typeof window.Android !== 'undefined' && window.Android.download) {
         // Use Android bridge for WebView
         try {
+          console.log('Using Android bridge for download');
           window.Android.download(fileUrl);
-          showToast(`Downloading ${fileName}`, 'success');
+          showToast(`Downloading ${fileName}...`, 'success');
         } catch (error) {
           console.error('Android download failed:', error);
-          // Fallback to regular download
-          downloadFileRegular(fileUrl, fileName);
+          showToast('Download failed: ' + error.message, 'error');
         }
       } else {
         // Regular browser download
+        console.log('Using regular browser download');
         downloadFileRegular(fileUrl, fileName);
       }
     }
@@ -2944,14 +2947,20 @@ document.addEventListener('click', function(event) {
 });
 
 function downloadFileRegular(fileUrl, fileName) {
-  const link = document.createElement('a');
-  link.href = fileUrl;
-  link.download = fileName;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Downloading ${fileName}...`, 'success');
+  } catch (error) {
+    console.error('Regular download failed:', error);
+    showToast('Download failed: ' + error.message, 'error');
+  }
 }
 
 // Initialize FCM notifications (only if user has enabled it in settings)
