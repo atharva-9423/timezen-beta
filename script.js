@@ -2926,16 +2926,31 @@ document.addEventListener('click', async function(event) {
     if (fileUrl && fileName) {
       console.log('Download requested:', fileName, fileUrl.substring(0, 80));
       
+      // Check URL type
+      const isDataUrl = fileUrl.startsWith('data:');
+      const isHttpUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://');
+      
       // Check if running in Android WebView
       if (typeof window.Android !== 'undefined' && window.Android.download) {
-        // Use Android bridge for WebView - it handles ALL URL types by opening in Chrome
-        try {
-          console.log('Using Android bridge for download:', fileUrl.substring(0, 50));
-          window.Android.download(fileUrl);
-          showToast(`Downloading ${fileName}...`, 'success');
-        } catch (error) {
-          console.error('Android download failed:', error);
-          showToast('Download failed: ' + error.message, 'error');
+        // For HTTP/HTTPS URLs, use Android bridge to open in Chrome
+        if (isHttpUrl) {
+          try {
+            console.log('Using Android bridge for HTTP/HTTPS download');
+            window.Android.download(fileUrl);
+            showToast(`Downloading ${fileName}...`, 'success');
+          } catch (error) {
+            console.error('Android download failed:', error);
+            showToast('Download failed: ' + error.message, 'error');
+          }
+        } else if (isDataUrl) {
+          // For data URLs, download directly in WebView (can't pass large data URLs through Intent)
+          console.log('Data URL detected, downloading directly in WebView');
+          showToast(`Downloading ${fileName}...`, 'info');
+          downloadFileRegular(fileUrl, fileName);
+        } else {
+          // Unknown URL type, try regular download
+          console.log('Unknown URL type, trying direct download');
+          downloadFileRegular(fileUrl, fileName);
         }
       } else {
         // Regular browser download
