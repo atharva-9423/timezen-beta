@@ -2932,20 +2932,22 @@ document.addEventListener('click', async function(event) {
       
       // Check if running in Android WebView
       if (typeof window.Android !== 'undefined' && window.Android.download) {
+        console.log('WebView detected, URL type:', isHttpUrl ? 'HTTP/HTTPS' : isDataUrl ? 'data URL' : 'unknown');
+        
         // For HTTP/HTTPS URLs, use Android bridge to open in Chrome
         if (isHttpUrl) {
           try {
-            console.log('Using Android bridge for HTTP/HTTPS download');
+            console.log('Opening in Chrome:', fileUrl);
             window.Android.download(fileUrl);
-            showToast(`Downloading ${fileName}...`, 'success');
+            showToast(`Opening in Chrome to download...`, 'success');
           } catch (error) {
             console.error('Android download failed:', error);
             showToast('Download failed: ' + error.message, 'error');
           }
         } else if (isDataUrl) {
           // For data URLs, download directly in WebView (can't pass large data URLs through Intent)
-          console.log('Data URL detected, downloading directly in WebView');
-          showToast(`Downloading ${fileName}...`, 'info');
+          console.log('Old file format - downloading in WebView (please re-upload for Chrome download)');
+          showToast(`Downloading in app (old format)`, 'info');
           downloadFileRegular(fileUrl, fileName);
         } else {
           // Unknown URL type, try regular download
