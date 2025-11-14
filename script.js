@@ -3448,30 +3448,32 @@ Remember: Quality and accuracy are paramount. Take time to think through problem
 
 
 
-// Function to open download links in system browser (for WebView compatibility)
+// Function to open download links via download page (opens in browser)
 function openInSystemBrowser(event, url) {
   event.preventDefault();
+
+  // Get filename from URL or use default
+  const filename = url.split('/').pop().split('?')[0] || 'download';
+  
+  // Create download page URL with parameters
+  const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+  const downloadPageUrl = `${window.location.origin}${basePath}download.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
 
   // Try to open in system browser using various methods
   // Method 1: Try Android WebView interface
   if (typeof Android !== 'undefined' && Android.openInBrowser) {
-    Android.openInBrowser(url);
+    Android.openInBrowser(downloadPageUrl);
     return;
   }
 
   // Method 2: Try iOS WebView interface
   if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
-    window.webkit.messageHandlers.openInBrowser.postMessage(url);
+    window.webkit.messageHandlers.openInBrowser.postMessage(downloadPageUrl);
     return;
   }
 
-  // Method 3: Use window.open with _system target (works in many WebView wrappers)
-  const opened = window.open(url, '_system');
-
-  // Method 4: Fallback to _blank if _system doesn't work
-  if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-    window.open(url, '_blank');
-  }
+  // Method 3: Use window.open with _blank target (opens in new tab/browser)
+  window.open(downloadPageUrl, '_blank');
 }
 
 // Download file for Android WebView (handles blob URLs)
