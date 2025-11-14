@@ -166,71 +166,6 @@ body {
   overscroll-behavior-y: contain;
 }
 
-/* Pull to Refresh Styles */
-.pull-to-refresh-indicator {
-  position: fixed;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
-  background: var(--primary-purple);
-  border: var(--border-width) solid var(--black);
-  border-radius: 50%;
-  box-shadow: 4px 4px 0px var(--black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9998;
-  transition: top 0.3s ease, transform 0.3s ease;
-}
-
-.pull-to-refresh-indicator.active {
-  top: 20px;
-}
-
-.pull-to-refresh-indicator.refreshing {
-  animation: none;
-}
-
-.pull-to-refresh-indicator i {
-  font-size: 28px;
-  color: var(--white);
-  transition: transform 0.3s ease, opacity 0.2s ease;
-}
-
-.pull-to-refresh-indicator.ready i {
-  transform: rotate(180deg);
-}
-
-.pull-to-refresh-indicator.refreshing i {
-  display: none;
-}
-
-.pull-to-refresh-indicator.refreshing::after {
-  content: '';
-  width: 30px;
-  height: 30px;
-  border: 3px solid var(--white);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spinner-rotate 0.5s linear infinite;
-}
-
-@keyframes spinner-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-body.dark-mode .pull-to-refresh-indicator {
-  border-color: var(--white2);
-  box-shadow: 4px 4px 0px var(--white2);
-}
-
 .page {
   display: none;
   min-height: 100vh;
@@ -3200,7 +3135,6 @@ body.dark-mode .study-material-card:hover {
 body.dark-mode .subject-name,
 body.dark-mode .study-material-title {
   color: var(--text-primary);
-}
 }
 
 .division-header {
