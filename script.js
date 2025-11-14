@@ -1078,10 +1078,11 @@ async function registerServiceWorker() {
         });
       });
 
-      // Request to cache user's division data for offline access
+      // Cache user's division data for offline access
       const userData = localStorage.getItem('userSession');
       if (userData) {
         const user = JSON.parse(userData);
+        // Request to cache division-specific data
         if (registration.active) {
           registration.active.postMessage({
             type: 'CACHE_URLS',
@@ -2846,9 +2847,9 @@ function viewSubjectMaterials(subject) {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <a href="${material.fileUrl}" onclick="openInSystemBrowser(event, '${material.fileUrl}')" class="study-material-download">
+          <button class="study-material-download" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
             <i class="ph ph-download-simple"></i> Download ${material.fileName}
-          </a>
+          </button>
         </div>
       `;
     });
@@ -2904,15 +2905,53 @@ function viewUncategorizedMaterials() {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <a href="${material.fileUrl}" onclick="openInSystemBrowser(event, '${material.fileUrl}')" class="study-material-download">
+          <button class="study-material-download" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
             <i class="ph ph-download-simple"></i> Download ${material.fileName}
-          </a>
+          </button>
         </div>
       `;
     });
 
     materialsGrid.innerHTML = html;
   }, 100);
+}
+
+document.addEventListener('click', function(event) {
+  const downloadBtn = event.target.closest('.study-material-download');
+  if (downloadBtn) {
+    event.preventDefault();
+    const fileUrl = downloadBtn.getAttribute('data-file-url');
+    const fileName = downloadBtn.getAttribute('data-file-name');
+    
+    if (fileUrl && fileName) {
+      // Check if running in Android WebView
+      if (window.Android && window.Android.download) {
+        // Use Android bridge for WebView
+        try {
+          window.Android.download(fileUrl);
+          showToast(`Downloading ${fileName}`, 'success');
+        } catch (error) {
+          console.error('Android download failed:', error);
+          // Fallback to regular download
+          downloadFileRegular(fileUrl, fileName);
+        }
+      } else {
+        // Regular browser download
+        downloadFileRegular(fileUrl, fileName);
+      }
+    }
+  }
+});
+
+function downloadFileRegular(fileUrl, fileName) {
+  const link = document.createElement('a');
+  link.href = fileUrl;
+  link.download = fileName;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // Initialize FCM notifications (only if user has enabled it in settings)
@@ -3446,67 +3485,6 @@ Remember: Quality and accuracy are paramount. Take time to think through problem
       aiResponse += "\n\n💡 **Tip**: For complex problems, try breaking them down into smaller parts, or let me know what specific aspect you'd like help with!";
     }
 
-
-
-// Function to open download links via download page (opens in browser)
-function openInSystemBrowser(event, url) {
-  event.preventDefault();
-
-  // Get filename from URL or use default
-  const filename = url.split('/').pop().split('?')[0] || 'download';
-  
-  // Create download page URL with parameters
-  const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-  const downloadPageUrl = `${window.location.origin}${basePath}download.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
-
-  // Try to open in system browser using various methods
-  // Method 1: Try Android WebView interface
-  if (typeof Android !== 'undefined' && Android.openInBrowser) {
-    Android.openInBrowser(downloadPageUrl);
-    return;
-  }
-
-  // Method 2: Try iOS WebView interface
-  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
-    window.webkit.messageHandlers.openInBrowser.postMessage(downloadPageUrl);
-    return;
-  }
-
-  // Method 3: Use window.open with _blank target (opens in new tab/browser)
-  window.open(downloadPageUrl, '_blank');
-}
-
-// Download file for Android WebView (handles blob URLs)
-async function downloadFileForAndroid(blob, filename) {
-  if (typeof Android !== 'undefined' && Android.downloadFile) {
-    try {
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        const base64data = reader.result.split(',')[1];
-        Android.downloadFile(base64data, filename, blob.type);
-      };
-      reader.readAsDataURL(blob);
-    } catch (error) {
-      console.error('Error downloading file for Android:', error);
-      // Fallback to regular download
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-    }
-  } else {
-    // Regular browser download
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-  }
-}
-
-window.openInSystemBrowser = openInSystemBrowser;
-window.downloadFileForAndroid = downloadFileForAndroid;
-
     await trackTokenUsage(modelName);
 
     hideTypingIndicator();
@@ -3527,8 +3505,7 @@ window.downloadFileForAndroid = downloadFileForAndroid;
 function getTodayIST() {
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000;
-  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
-  const istTime = new Date(utcTime + istOffset);
+  const istTime = new Date(now.getTime() + istOffset);
   return istTime;
 }
 
@@ -3656,87 +3633,8 @@ function escapeHtml(text) {
   return div.innerHTML.replace(/\n/g, '<br>');
 }
 
-// Function to open download links in system browser (for WebView compatibility)
-function openInSystemBrowser(event, url) {
-  event.preventDefault();
-
-  // Try to open in system browser using various methods
-  // Method 1: Try Android WebView interface
-  if (typeof Android !== 'undefined' && Android.openInBrowser) {
-    Android.openInBrowser(url);
-    return;
-  }
-
-  // Method 2: Try iOS WebView interface
-  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openInBrowser) {
-    window.webkit.messageHandlers.openInBrowser.postMessage(url);
-    return;
-  }
-
-  // Method 3: Use window.open with _system target (works in many WebView wrappers)
-  const opened = window.open(url, '_system');
-
-  // Method 4: Fallback to _blank if _system doesn't work
-  if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-    window.open(url, '_blank');
-  }
-}
-
-// Download file for Android WebView (handles blob URLs)
-async function downloadFileForAndroid(blob, filename) {
-  if (typeof Android !== 'undefined' && Android.downloadFile) {
-    try {
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        const base64data = reader.result.split(',')[1];
-        Android.downloadFile(base64data, filename, blob.type);
-      };
-      reader.readAsDataURL(blob);
-    } catch (error) {
-      console.error('Error downloading file for Android:', error);
-      // Fallback to regular download
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-    }
-  } else {
-    // Regular browser download
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-  }
-}
-
-// Function to download a note
-function downloadNote(noteId) {
-  const note = notes.find(n => n.id === noteId);
-  if (!note) return;
-
-  const blob = new Blob([note.content], { type: 'text/plain' });
-  const filename = `${note.title}.txt`;
-
-  // Check if running in Android WebView
-  if (typeof Android !== 'undefined' && Android.downloadFile) {
-    downloadFileForAndroid(blob, filename);
-  } else {
-    // Regular browser download
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-}
-
 window.sendZenAIMessage = sendZenAIMessage;
 window.sendSuggestion = sendSuggestion;
 window.clearZenAIChat = clearZenAIChat;
 window.handleZenAIKeyPress = handleZenAIKeyPress;
 window.handleZenAIPaste = handleZenAIPaste;
-window.openInSystemBrowser = openInSystemBrowser;
-window.downloadFileForAndroid = downloadFileForAndroid;
-window.downloadNote = downloadNote;
