@@ -2931,38 +2931,23 @@ document.addEventListener('click', async function(event) {
   }
 });
 
-// Open file preview modal
+// Open file preview using custom PDF viewer
 function openFilePreview(fileUrl, fileName) {
-  // Create modal overlay
-  const modal = document.createElement('div');
-  modal.className = 'file-preview-modal';
-  modal.innerHTML = `
-    <div class="file-preview-container">
-      <div class="file-preview-header">
-        <h3 class="file-preview-title">${fileName}</h3>
-        <button class="file-preview-close" onclick="closeFilePreview()">
-          <i class="ph ph-x"></i>
-        </button>
-      </div>
-      <div class="file-preview-content">
-        <iframe src="${fileUrl}" frameborder="0" class="file-preview-iframe"></iframe>
-      </div>
-    </div>
-  `;
+  // Store URL and filename in sessionStorage to avoid URL length issues
+  sessionStorage.setItem('pdfViewerUrl', fileUrl);
+  sessionStorage.setItem('pdfViewerName', fileName);
   
-  document.body.appendChild(modal);
+  // Get base path
+  const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
   
-  // Prevent body scroll when modal is open
-  document.body.style.overflow = 'hidden';
+  // Open PDF viewer in same window without parameters
+  window.location.href = `${basePath}pdf-viewer.html`;
 }
 
-// Close file preview modal
+// Close file preview modal (deprecated, kept for compatibility)
 function closeFilePreview() {
-  const modal = document.querySelector('.file-preview-modal');
-  if (modal) {
-    modal.remove();
-    document.body.style.overflow = '';
-  }
+  // This function is no longer needed but kept for backward compatibility
+  window.history.back();
 }
 
 // Initialize FCM notifications (only if user has enabled it in settings)
