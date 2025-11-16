@@ -3094,7 +3094,7 @@ body.dark-mode .base span:after {
   font-weight: 600;
 }
 
-.study-material-download {
+.study-material-view {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -3108,16 +3108,117 @@ body.dark-mode .base span:after {
   font-weight: 700;
   text-decoration: none;
   transition: all 0.2s;
+  width: 100%;
+  justify-content: center;
+  cursor: pointer;
 }
 
-.study-material-download:hover {
+.study-material-view:hover {
   transform: translate(-2px, -2px);
   box-shadow: 5px 5px 0 var(--black);
 }
 
-.study-material-download:active {
+.study-material-view:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--black);
+}
+
+/* File Preview Modal */
+.file-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.file-preview-container {
+  background: var(--white);
+  border: 3px solid var(--black);
+  border-radius: var(--border-radius);
+  box-shadow: 5px 5px 0 var(--black);
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.file-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 2px solid var(--black);
+  background: var(--primary-yellow);
+}
+
+.file-preview-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.file-preview-close {
+  background: var(--primary-red);
+  color: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 2px 2px 0 var(--black);
+}
+
+.file-preview-close:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--black);
+}
+
+.file-preview-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+.file-preview-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+body.dark-mode .file-preview-container {
+  background: var(--bg-primary);
+}
+
+body.dark-mode .file-preview-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .file-preview-title {
+  color: var(--white);
+}
+
+body.dark-mode .file-preview-close {
+  border-color: var(--border-color);
 }
 
 body.dark-mode .subject-material-card,
