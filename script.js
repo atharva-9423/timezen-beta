@@ -2847,8 +2847,8 @@ function viewSubjectMaterials(subject) {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <button class="study-material-download" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
-            <i class="ph ph-download-simple"></i> Download ${material.fileName}
+          <button class="study-material-view" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
+            <i class="ph ph-file-text"></i> ${material.fileName}
           </button>
         </div>
       `;
@@ -2905,8 +2905,8 @@ function viewUncategorizedMaterials() {
             <span class="study-material-division">Division: ${material.division}</span>
             <span class="study-material-date">${dateStr}</span>
           </div>
-          <button class="study-material-download" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
-            <i class="ph ph-download-simple"></i> Download ${material.fileName}
+          <button class="study-material-view" data-file-url="${material.fileUrl}" data-file-name="${material.fileName}">
+            <i class="ph ph-file-text"></i> ${material.fileName}
           </button>
         </div>
       `;
@@ -2916,67 +2916,52 @@ function viewUncategorizedMaterials() {
   }, 100);
 }
 
+
+// Handle study material view button clicks
 document.addEventListener('click', async function(event) {
-  const downloadBtn = event.target.closest('.study-material-download');
-  if (downloadBtn) {
+  const viewBtn = event.target.closest('.study-material-view');
+  if (viewBtn) {
     event.preventDefault();
-    const fileUrl = downloadBtn.getAttribute('data-file-url');
-    const fileName = downloadBtn.getAttribute('data-file-name');
+    const fileUrl = viewBtn.getAttribute('data-file-url');
+    const fileName = viewBtn.getAttribute('data-file-name');
     
     if (fileUrl && fileName) {
-      console.log('Download requested:', fileName, fileUrl.substring(0, 80));
-      
-      // Check URL type
-      const isDataUrl = fileUrl.startsWith('data:');
-      const isHttpUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://');
-      
-      // Check if running in Android WebView
-      if (typeof window.Android !== 'undefined' && window.Android.download) {
-        console.log('WebView detected, URL type:', isHttpUrl ? 'HTTP/HTTPS' : isDataUrl ? 'data URL' : 'unknown');
-        
-        // For HTTP/HTTPS URLs, use Android bridge to open in Chrome
-        if (isHttpUrl) {
-          try {
-            console.log('Opening in Chrome:', fileUrl);
-            window.Android.download(fileUrl);
-            showToast(`Opening in Chrome to download...`, 'success');
-          } catch (error) {
-            console.error('Android download failed:', error);
-            showToast('Download failed: ' + error.message, 'error');
-          }
-        } else if (isDataUrl) {
-          // For data URLs, download directly in WebView (can't pass large data URLs through Intent)
-          console.log('Old file format - downloading in WebView (please re-upload for Chrome download)');
-          showToast(`Downloading in app (old format)`, 'info');
-          downloadFileRegular(fileUrl, fileName);
-        } else {
-          // Unknown URL type, try regular download
-          console.log('Unknown URL type, trying direct download');
-          downloadFileRegular(fileUrl, fileName);
-        }
-      } else {
-        // Regular browser download
-        console.log('Using regular browser download');
-        downloadFileRegular(fileUrl, fileName);
-      }
+      openFilePreview(fileUrl, fileName);
     }
   }
 });
 
-function downloadFileRegular(fileUrl, fileName) {
-  try {
-    const link = document.createElement('a');
-    link.href = fileUrl;
-    link.download = fileName;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(`Downloading ${fileName}...`, 'success');
-  } catch (error) {
-    console.error('Regular download failed:', error);
-    showToast('Download failed: ' + error.message, 'error');
+// Open file preview modal
+function openFilePreview(fileUrl, fileName) {
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.className = 'file-preview-modal';
+  modal.innerHTML = `
+    <div class="file-preview-container">
+      <div class="file-preview-header">
+        <h3 class="file-preview-title">${fileName}</h3>
+        <button class="file-preview-close" onclick="closeFilePreview()">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+      <div class="file-preview-content">
+        <iframe src="${fileUrl}" frameborder="0" class="file-preview-iframe"></iframe>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Prevent body scroll when modal is open
+  document.body.style.overflow = 'hidden';
+}
+
+// Close file preview modal
+function closeFilePreview() {
+  const modal = document.querySelector('.file-preview-modal');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
   }
 }
 
