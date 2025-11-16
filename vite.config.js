@@ -16,6 +16,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
         about: resolve(__dirname, 'about.html'),
+        pdfViewer: resolve(__dirname, 'pdf-viewer.html'),
       },
     },
   },
