@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#8B5CF6" />
+    <title>Preparing Download - TimeZen</title>
+    <link href="countdown-style.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+  </head>
+  <body>
+    <div class="countdown-page">
+      <div class="countdown-container">
+        <div class="countdown-icon">
+          <i class="ph ph-file-arrow-down"></i>
+        </div>
+        <h1 class="countdown-title">Your download will start soon</h1>
+        <p class="countdown-filename" id="countdownFileName">Loading...</p>
+        <div class="countdown-timer">
+          <span id="countdownNumber">3</span>
+        </div>
+        <p class="countdown-message">Please wait while we prepare your file...</p>
+        <button class="btn-cancel" id="cancelBtn">
+          <i class="ph ph-x-circle"></i> Cancel & Close
+        </button>
+      </div>
+    </div>
+    <script src="countdown-script.js"></script>
+  </body>
+</html>

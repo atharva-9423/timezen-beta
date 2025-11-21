@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Settings - TimeZen</title>
+    <link href="settings-style.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+  </head>
+  <body>
+    <div class="settings-container">
+      <header class="settings-header">
+        <button class="btn-back" onclick="goBack()">
+          <i class="ph ph-arrow-left"></i>
+        </button>
+        <h1>Settings</h1>
+        <div style="width: 40px;"></div>
+      </header>
+
+      <div class="settings-content">
+        <section class="settings-section">
+          <h2 class="section-title">
+            <i class="ph ph-palette"></i>
+            Appearance
+          </h2>
+          <div class="settings-card">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h3>Dark Mode</h3>
+                <p>Toggle between light and dark theme</p>
+              </div>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="darkModeToggle"
+                  onchange="toggleDarkMode()"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2 class="section-title">
+            <i class="ph ph-bell"></i>
+            Notifications
+          </h2>
+          <div class="settings-card">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h3>Push Notifications</h3>
+                <p>Receive notifications for important updates</p>
+              </div>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="pushNotifications"
+                  checked
+                  onchange="saveSettings()"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item" style="border-left: 4px solid var(--primary-blue); padding-left: 15px;">
+            <button onclick="viewFCMToken()" style="background: var(--primary-blue); color: var(--white); border: 2px solid var(--black); padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; box-shadow: 3px 3px 0px var(--black); width: 100%;">
+              🔑 View FCM Token
+            </button>
+            <div class="settings-item-info" style="margin-top: 10px;">
+              <p style="font-size: 12px; color: var(--text-secondary);">Copy your FCM token to send test notifications from Firebase Console</p>
+            </div>
+          </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h3>Class Reminders</h3>
+                <p>Get reminded before classes start</p>
+              </div>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="classReminders"
+                  checked
+                  onchange="saveSettings()"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h3>Holiday Alerts</h3>
+                <p>Be notified about upcoming holidays</p>
+              </div>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="holidayAlerts"
+                  checked
+                  onchange="saveSettings()"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2 class="section-title">
+            <i class="ph ph-user-circle"></i>
+            Account
+          </h2>
+          <div class="settings-card">
+            <div class="setting-item clickable" onclick="openProfileEdit()">
+              <div class="setting-info">
+                <h3>Edit Profile</h3>
+                <p>Update your name and profile picture</p>
+              </div>
+              <i class="ph ph-caret-right"></i>
+            </div>
+            <div class="setting-item clickable" onclick="changePassword()">
+              <div class="setting-info">
+                <h3>Change Password</h3>
+                <p>Update your account password</p>
+              </div>
+              <i class="ph ph-caret-right"></i>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2 class="section-title">
+            <i class="ph ph-info"></i>
+            About
+          </h2>
+          <div class="settings-card">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h3>Version</h3>
+                <p id="app-version-display">Loading...</p>
+              </div>
+            </div>
+            <div class="setting-item clickable" onclick="openAbout()">
+              <div class="setting-info">
+                <h3>About TimeZen</h3>
+                <p>Learn more about this application</p>
+              </div>
+              <i class="ph ph-caret-right"></i>
+            </div>
+            <div class="setting-item clickable" onclick="openGithub()">
+              <div class="setting-info">
+                <h3>GitHub</h3>
+                <p>View source code and contribute</p>
+              </div>
+              <i class="ph ph-caret-right"></i>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <button class="btn-danger" onclick="handleLogout()">
+            <i class="ph ph-sign-out"></i>
+            Log Out
+          </button>
+        </section>
+      </div>
+    </div>
+
+    <script src="settings-script.js"></script>
+  </body>
+</html>

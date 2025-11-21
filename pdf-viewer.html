@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#8B5CF6">
+  <title>PDF Viewer - TimeZen</title>
+  <link href="pdf-viewer-style.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+  <div class="pdf-viewer-container">
+    <header class="pdf-viewer-header">
+      <button class="icon-btn" id="backBtn">
+        <i class="ph ph-arrow-fat-left"></i>
+      </button>
+      <h2 class="pdf-title" id="pdfTitle">Loading...</h2>
+    </header>
+
+    <div class="pdf-controls">
+      <button class="control-btn" id="zoomOutBtn">
+        <i class="ph ph-minus"></i>
+      </button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="control-btn" id="zoomInBtn">
+        <i class="ph ph-plus"></i>
+      </button>
+    </div>
+
+    <div class="pdf-loading" id="pdfLoading">
+      <div class="loader-spinner"></div>
+      <p>Loading PDF...</p>
+    </div>
+
+    <div class="pdf-error" id="pdfError" style="display: none;">
+      <i class="ph ph-warning-circle"></i>
+      <p>Failed to load PDF</p>
+      <button class="retry-btn" id="retryBtn">Retry</button>
+    </div>
+
+    <div class="pdf-canvas-container" id="pdfCanvasContainer">
+      <canvas id="pdfCanvas"></canvas>
+    </div>
+
+    <div class="pdf-controls page-controls-bottom">
+      <button class="control-btn" id="prevPageBtn">
+        <i class="ph ph-caret-left"></i>
+      </button>
+      <span class="page-info" id="pageInfo">1 / 1</span>
+      <button class="control-btn" id="nextPageBtn">
+        <i class="ph ph-caret-right"></i>
+      </button>
+    </div>
+
+  <script src="pdf-viewer-script.js"></script>
+</body>
+</html>

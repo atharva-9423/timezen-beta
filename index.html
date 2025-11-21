@@ -1,0 +1,1409 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="description" content="TimeZen - College Lecture Tracker for AVCOE students" />
+    <link rel="manifest" href="/edutrack/manifest.json" />
+    <title>TimeZen - College Lecture Tracker</title>
+    <link href="style.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  </head>
+  <body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Intro Animation Screen -->
+    <div class="intro-animation-overlay" id="introAnimation">
+      <div class="intro-content">
+        <div class="intro-step intro-step-1">
+          <h1 class="intro-title">
+            Introducing <span class="timezen-italic">TimeZen</span>
+          </h1>
+        </div>
+        <div class="intro-step intro-step-2">
+          <h2 class="intro-heading">Meet our Team</h2>
+          <p class="team-name-display">ZenSpace</p>
+        </div>
+        <div class="intro-step intro-step-3">
+          <p class="team-member founder">
+            Founder & Lead Developer:
+            <span class="name-highlight">Atharva Phatangare</span>
+          </p>
+        </div>
+        <div class="intro-step intro-step-4">
+          <p class="team-member founder">
+            Co-Founder: <span class="name-highlight">Rushikesh Parhad</span>
+          </p>
+        </div>
+        <div class="intro-step intro-step-5">
+          <p class="team-member founder">
+            Data Scientist and Analyst:
+            <span class="name-highlight">Sahil Satpute</span>
+          </p>
+        </div>
+        <div class="intro-step intro-step-6">
+          <p class="team-member founder">
+            Testing & Quality Analyst:
+            <span class="name-highlight">Shubham Pawar</span>
+          </p>
+        </div>
+        <div class="intro-step intro-step-7">
+          <p class="team-member founder">
+            UI Designer: <span class="name-highlight">Aryan Pansare</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loader">
+        <span><span></span><span></span><span></span><span></span></span>
+        <div class="base">
+          <span></span>
+          <div class="face"></div>
+        </div>
+      </div>
+      <div class="longfazers">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="logout-modal-overlay" id="logoutModal">
+      <div class="logout-modal">
+        <div class="logout-modal-header">
+          <h3>Confirm Logout</h3>
+        </div>
+        <div class="logout-modal-body">
+          <p>Are you sure you want to log out?</p>
+        </div>
+        <div class="logout-modal-actions">
+          <button class="modal-btn modal-btn-cancel" onclick="cancelLogout()">
+            Cancel
+          </button>
+          <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- College Ended Modal -->
+    <div class="logout-modal-overlay" id="collegeEndedModal">
+      <div class="logout-modal college-ended-modal">
+        <div class="logout-modal-header">
+          <h3>🎓 College Day Ended!</h3>
+        </div>
+        <div class="logout-modal-body">
+          <p id="collegeEndedMessage">All lectures completed for today!</p>
+          <p
+            id="collegeEndedTime"
+            style="
+              font-size: 24px;
+              font-weight: 700;
+              margin-top: 15px;
+              color: var(--primary-green);
+            "
+          ></p>
+        </div>
+        <div class="logout-modal-actions">
+          <button
+            class="modal-btn modal-btn-confirm"
+            onclick="closeCollegeEndedModal()"
+          >
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Chat Confirmation Modal -->
+    <div class="delete-chat-modal-overlay" id="deleteChatModal">
+      <div class="delete-chat-modal">
+        <div class="delete-chat-modal-header">
+          <h3><i class="ph ph-trash"></i> Delete Chat?</h3>
+        </div>
+        <div class="delete-chat-modal-body">
+          <p>
+            Are you sure you want to delete this chat? This action cannot be
+            undone.
+          </p>
+        </div>
+        <div class="delete-chat-modal-actions">
+          <button
+            class="delete-modal-btn delete-modal-btn-cancel"
+            onclick="cancelDeleteChat()"
+          >
+            Cancel
+          </button>
+          <button
+            class="delete-modal-btn delete-modal-btn-confirm"
+            onclick="confirmDeleteChat()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Schedule Modal -->
+    <div class="schedule-modal-overlay" id="scheduleModal">
+      <div class="schedule-modal">
+        <div class="schedule-modal-header">
+          <h3>📅 Today's Schedule</h3>
+          <button class="schedule-modal-close" onclick="closeScheduleModal()">✕</button>
+        </div>
+        <div class="schedule-modal-body" id="scheduleModalBody">
+          <div class="schedule-loading">Loading schedule...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="welcome-page" class="page">
+      <div class="floating-tags">
+        <span class="tag tag-1">#Mentoring</span>
+        <span class="tag tag-2">#Training</span>
+        <span class="tag tag-3">#Development</span>
+        <span class="tag tag-4">#Curriculum</span>
+        <span class="tag tag-5">#AVCOE</span>
+      </div>
+
+      <div class="welcome-container">
+        <h1 class="welcome-title">
+          Your Gateway To<br />
+          Unlimited<br />
+          <span class="highlight">Learning With AVCOE</span>
+        </h1>
+        <p class="welcome-subtitle">An Autonomous Institute</p>
+
+        <p class="welcome-text">
+          <strong>For Students by Students</strong>. easy tracking of schedule,
+          and learning progress.
+        </p>
+
+        <button class="btn-primary" onclick="playIntroAnimation()">
+          Get started
+          <div class="icon">
+            <svg
+              height="24"
+              width="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0 0h24v24H0z" fill="none"></path>
+              <path
+                d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                fill="currentColor"
+              ></path>
+            </svg>
+          </div>
+        </button>
+
+        <label class="theme-switch">
+          <input
+            type="checkbox"
+            class="theme-switch__checkbox"
+            onchange="toggleTheme()"
+          />
+          <div class="theme-switch__container">
+            <div class="theme-switch__clouds"></div>
+            <div class="theme-switch__stars-container">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 144 55"
+                fill="none"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71123C136.607 6.55462 136.996 7.56303 136.996 8.72727C136.996 7.95722 137.172 7.25134 137.525 6.59129C137.886 5.93124 138.372 5.39954 138.98 5.00535C139.598 4.60199 140.268 4.39114 141 4.35447C139.88 4.2903 138.936 3.85027 138.16 3.00688C137.384 2.16348 136.996 1.16425 136.996 0C136.996 1.16425 136.607 2.16348 135.831 3.00688ZM31 23.3545C32.1114 23.2995 33.0551 22.8503 33.8313 22.0069C34.6075 21.1635 34.9956 20.1642 34.9956 19C34.9956 20.1642 35.3837 21.1635 36.1599 22.0069C36.9361 22.8503 37.8798 23.2903 39 23.3545C38.2679 23.3911 37.5976 23.602 36.9802 24.0053C36.3716 24.3995 35.8864 24.9312 35.5248 25.5913C35.172 26.2513 34.9956 26.9572 34.9956 27.7273C34.9956 26.563 34.6075 25.5546 33.8313 24.7112C33.0551 23.8587 32.1114 23.4095 31 23.3545ZM0 36.3545C1.11136 36.2995 2.05513 35.8503 2.83131 35.0069C3.6075 34.1635 3.99559 33.1642 3.99559 32C3.99559 33.1642 4.38368 34.1635 5.15987 35.0069C5.93605 35.8503 6.87982 36.2903 8 36.3545C7.26792 36.3911 6.59757 36.602 5.98015 37.0053C5.37155 37.3995 4.88644 37.9312 4.52481 38.5913C4.172 39.2513 3.99559 39.9572 3.99559 40.7273C3.99559 39.563 3.6075 38.5546 2.83131 37.7112C2.05513 36.8587 1.11136 36.4095 0 36.3545ZM56.8313 24.0069C56.0551 24.8503 55.1114 25.2995 54 25.3545C55.1114 25.4095 56.0551 25.8587 56.8313 26.7112C57.6075 27.5546 57.9956 28.563 57.9956 29.7273C57.9956 28.9572 58.172 28.2513 58.5248 27.5913C58.8864 26.9312 59.3716 26.3995 59.9802 26.0053C60.5976 25.602 61.2679 25.3911 62 25.3545C60.8798 25.2903 59.9361 24.8503 59.1599 24.0069C58.3837 23.1635 57.9956 22.1642 57.9956 21C57.9956 22.1642 57.6075 23.1635 56.8313 24.0069ZM81 25.3545C82.1114 25.2995 83.0551 24.8503 83.8313 24.0069C84.6075 23.1635 84.9956 22.1642 84.9956 21C84.9956 22.1642 85.3837 23.1635 86.1599 24.0069C86.9361 24.8503 87.8798 25.2903 89 25.3545C88.2679 25.3911 87.5976 25.602 86.9802 26.0053C86.3716 26.3995 85.8864 26.9312 85.5248 27.5913C85.172 28.2513 84.9956 28.9572 84.9956 29.7273C84.9956 28.563 84.6075 27.5546 83.8313 26.7112C83.0551 25.8587 82.1114 25.4095 81 25.3545ZM136 36.3545C137.111 36.2995 138.055 35.8503 138.831 35.0069C139.607 34.1635 139.996 33.1642 139.996 32C139.996 33.1642 140.384 34.1635 141.16 35.0069C141.936 35.8503 142.88 36.2903 144 36.3545C143.268 36.3911 142.598 36.602 141.98 37.0053C141.372 37.3995 140.886 37.9312 140.525 38.5913C140.172 39.2513 139.996 39.9572 139.996 40.7273C139.996 39.563 139.607 38.5546 138.831 37.7112C138.055 36.8587 137.111 36.4095 136 36.3545ZM101.831 49.0069C101.055 49.8503 100.111 50.2995 99 50.3545C100.111 50.4095 101.055 50.8587 101.831 51.7112C102.607 52.5546 102.996 53.563 102.996 54.7273C102.996 53.9572 103.172 53.2513 103.525 52.5913C103.886 51.9312 104.372 51.3995 104.98 51.0053C105.598 50.602 106.268 50.3911 107 50.3545C105.88 50.2903 104.936 49.8503 104.16 49.0069C103.384 48.1635 102.996 47.1642 102.996 46C102.996 47.1642 102.607 48.1635 101.831 49.0069Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+            <div class="theme-switch__circle-container">
+              <div class="theme-switch__sun-moon-container">
+                <div class="theme-switch__moon">
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                  <div class="theme-switch__spot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div id="login-page" class="page">
+      <div class="login-container">
+        <h1 class="login-title">
+          Welcome to<br />
+          <span class="highlight">TimeZen</span>
+        </h1>
+
+        <p class="login-subtitle">Please fill in your details to continue</p>
+
+        <form class="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="student-name">Student Name</label>
+            <input
+              type="text"
+              id="student-name"
+              class="form-input"
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="branch">Branch</label>
+            <div class="custom-select">
+              <div class="select-header" onclick="toggleDropdown('branch')">
+                <span
+                  class="select-value"
+                  data-placeholder="Select your branch"
+                ></span>
+                <span class="select-arrow">▼</span>
+              </div>
+              <div class="select-options" id="branch-options">
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'AI & DS')"
+                >
+                  AI & DS
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'Computer Engineering')"
+                >
+                  Computer Engineering
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'Electrical Engineering')"
+                >
+                  Electrical Engineering
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'Mechanical Engineering')"
+                >
+                  Mechanical Engineering
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'Civil Engineering')"
+                >
+                  Civil Engineering
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'ECE')"
+                >
+                  ECE
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'E&TC')"
+                >
+                  E&TC
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'IT')"
+                >
+                  IT
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('branch', 'Automation & Robotics')"
+                >
+                  Automation & Robotics
+                </div>
+              </div>
+              <input type="hidden" id="branch" name="branch" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="division">Division</label>
+            <div class="custom-select">
+              <div class="select-header" onclick="toggleDropdown('division')">
+                <span
+                  class="select-value"
+                  data-placeholder="Select your division"
+                ></span>
+                <span class="select-arrow">▼</span>
+              </div>
+              <div class="select-options" id="division-options">
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'A')"
+                >
+                  A
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'B')"
+                >
+                  B
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'C')"
+                >
+                  C
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'D')"
+                >
+                  D
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'E')"
+                >
+                  E
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'F')"
+                >
+                  F
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'G')"
+                >
+                  G
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'H')"
+                >
+                  H
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'I')"
+                >
+                  I
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'J')"
+                >
+                  J
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'K')"
+                >
+                  K
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'L')"
+                >
+                  L
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'M')"
+                >
+                  M
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'N')"
+                >
+                  N
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'O')"
+                >
+                  O
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'P')"
+                >
+                  P
+                </div>
+                <div
+                  class="select-option"
+                  onclick="selectOption('division', 'Q')"
+                >
+                  Q
+                </div>
+              </div>
+              <input type="hidden" id="division" name="division" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="year">Year</label>
+            <input
+              type="text"
+              id="year"
+              class="form-input"
+              value="First Year"
+              readonly
+            />
+          </div>
+
+          <button type="submit" class="btn-primary btn-submit">
+            Continue
+            <div class="icon">
+              <svg
+                height="24"
+                width="24"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path
+                  d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="auth-page" class="page">
+      <div class="login-container">
+        <h1 class="login-title">
+          Authentication<br />
+          <span class="highlight">Required</span>
+        </h1>
+
+        <p class="login-subtitle">Please enter your credentials to continue</p>
+
+        <form class="login-form" onsubmit="handleAuthentication(event)">
+          <div class="form-group">
+            <label for="enr-number">Enrollment Number</label>
+            <input
+              type="text"
+              id="enr-number"
+              class="form-input"
+              placeholder="Enter 10-digit enrollment number"
+              maxlength="10"
+              inputmode="numeric"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              class="form-input"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <button type="submit" class="btn-primary btn-submit">
+            Authenticate
+            <div class="icon">
+              <svg
+                height="24"
+                width="24"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path
+                  d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="home-page" class="page">
+      <header class="app-header">
+        <div class="header-left">
+          <div
+            class="profile-backdrop"
+            id="profileBackdrop"
+            onclick="toggleProfileMenu()"
+          ></div>
+          <div class="profile-container">
+            <div
+              class="profile-pic"
+              onclick="toggleProfileMenu()"
+              style="cursor: pointer"
+            >
+              <i class="ph ph-user"></i>
+            </div>
+            <div class="profile-dropdown" id="profileDropdown">
+              <div class="profile-dropdown-section">
+                <button
+                  class="profile-dropdown-item"
+                  onclick="openProfilePage()"
+                >
+                  <span class="item-icon"
+                    ><i class="ph ph-user-circle-gear"></i
+                  ></span>
+                  <span class="item-label">Profile</span>
+                  <span class="item-arrow">›</span>
+                </button>
+                <button class="profile-dropdown-item" onclick="openAboutPage()">
+                  <span class="item-icon"><i class="ph ph-info"></i></span>
+                  <span class="item-label">About</span>
+                  <span class="item-arrow">›</span>
+                </button>
+                <button
+                  class="profile-dropdown-item"
+                  onclick="openGithubPage()"
+                >
+                  <span class="item-icon"
+                    ><i class="ph ph-github-logo"></i
+                  ></span>
+                  <span class="item-label">Github</span>
+                  <span class="item-arrow">›</span>
+                </button>
+                <button
+                  class="profile-dropdown-item"
+                  onclick="openSettingsPage()"
+                >
+                  <span class="item-icon"><i class="ph ph-gear"></i></span>
+                  <span class="item-label">Settings</span>
+                  <span class="item-arrow">›</span>
+                </button>
+              </div>
+              <div class="profile-dropdown-section">
+                <button
+                  class="profile-dropdown-item logout-item"
+                  onclick="handleLogout()"
+                >
+                  <div class="logout-icon-container">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 1024 1024"
+                      height="25px"
+                      width="25px"
+                    >
+                      <path
+                        d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                        fill="#F44336"
+                      ></path>
+                      <path
+                        d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                        fill="#F44336"
+                      ></path>
+                    </svg>
+                  </div>
+                  <p class="logout-text">Log Out</p>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="live-clock" class="live-clock">
+            <div class="clock-time">--:--</div>
+            <div class="clock-date">Loading...</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div
+            class="notification-backdrop"
+            id="notificationBackdrop"
+            onclick="closeNotifications()"
+          ></div>
+          <button
+            class="icon-btn notification-btn"
+            onclick="toggleNotifications()"
+          >
+            <i class="ph ph-bell"></i>
+            <span
+              class="notification-badge"
+              id="notificationBadge"
+              style="display: none"
+              >0</span
+            >
+          </button>
+          <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+              <h4>Notifications</h4>
+              <button class="mark-all-read" onclick="markAllNoticesAsRead()">
+                Mark all as read
+              </button>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+              <div class="notification-empty">
+                <p>No notifications</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="container">
+        <div class="next-class-card">
+          <div class="card-header">
+            <div>
+              <h2>Science Class In<br />20 Minutes</h2>
+              <p class="teacher-name">Robert K. Thomas</p>
+            </div>
+            <div class="class-info">
+              <div class="class-count">0/0</div>
+              <div class="class-time">18:00</div>
+            </div>
+          </div>
+          <button class="zen-ai-btn" onclick="goToPage('zen-ai')">
+            <img
+              src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3ctitle%3eZen Browser%3c/title%3e%3cpath fill='white' d='M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12m-12 9.846c5.438 0 9.846-4.408 9.846-9.846S17.438 2.154 12 2.154 2.154 6.562 2.154 12 6.562 21.846 12 21.846M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0m-8 6.462a6.462 6.462 0 1 0 0-12.924 6.462 6.462 0 0 0 0 12.924m0-1.847a4.615 4.615 0 1 0 0-9.23 4.615 4.615 0 0 0 0 9.23M15.692 12a3.692 3.692 0 1 1-7.384 0 3.692 3.692 0 0 1 7.384 0'/%3e%3c/svg%3e"
+              alt="Zen AI"
+              class="zen-ai-icon"
+            />
+            Try our Zen AI
+          </button>
+        </div>
+
+        <button class="btn-timeline" onclick="goToPage('timeline')">
+          Timetable →
+        </button>
+
+        <div class="courses-grid">
+          <div class="course-card study-materials-card" onclick="goToPage('study-materials-subjects')" style="max-width: 100px; min-width: 100px; padding: 20px;">
+            <div class="course-icon study-materials-icon">
+              <i class="ph ph-backpack"></i>
+            </div>
+            <span
+              class="notification-badge course-card-badge"
+              id="studyMaterialsBadge"
+              style="display: none"
+              >0</span
+            >
+          </div>
+
+          <div class="course-card community-card" onclick="goToPage('community')">
+            <div class="course-icon purple">💬</div>
+            <div class="course-badge">|||</div>
+            <h4>Community<br />Doubts</h4>
+            <p class="teacher-name">Ask & Share Knowledge</p>
+            <div class="course-tags">
+              <span class="tag-small">#Doubts</span>
+              <span class="tag-small">#Help</span>
+            </div>
+            <div class="progress-bar purple">
+              <div class="progress-label">Your Division</div>
+              <div class="progress-time" id="communityDivisionTag"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="btn-track-progress" onclick="goToPage('track-progress')">
+          📊 Track Progress
+        </button>
+      </div>
+    </div>
+
+    <div id="track-progress-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">Track Progress</h2>
+        <button class="icon-btn">
+          <i class="ph ph-chart-line"></i>
+        </button>
+      </header>
+
+      <div class="track-progress-container">
+        <div class="attendance-summary-card">
+          <div class="attendance-header">
+            <h3>📊 Overall Attendance</h3>
+            <span class="attendance-percentage">87.5%</span>
+          </div>
+          <div class="attendance-progress-bar">
+            <div class="attendance-progress-fill" style="width: 87.5%"></div>
+          </div>
+          <div class="attendance-stats">
+            <div class="stat-item">
+              <span class="stat-value">105</span>
+              <span class="stat-label">Present</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">15</span>
+              <span class="stat-label">Absent</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">120</span>
+              <span class="stat-label">Total</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="performance-card">
+          <h3>🎯 Performance Overview</h3>
+          <div class="performance-grid">
+            <div class="performance-item">
+              <div class="performance-icon">📈</div>
+              <div class="performance-details">
+                <span class="performance-label">Current GPA</span>
+                <span class="performance-value">8.4/10</span>
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-icon">⏱️</div>
+              <div class="performance-details">
+                <span class="performance-label">Study Hours (Week)</span>
+                <span class="performance-value">24.5 hrs</span>
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-icon">🏆</div>
+              <div class="performance-details">
+                <span class="performance-label">Rank in Class</span>
+                <span class="performance-value">12/60</span>
+              </div>
+            </div>
+            <div class="performance-item">
+              <div class="performance-icon">📝</div>
+              <div class="performance-details">
+                <span class="performance-label">Assignments Done</span>
+                <span class="performance-value">18/20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="syllabus-section">
+          <h3>📚 Syllabus Completion</h3>
+          
+          <div class="subject-progress-grid">
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-brain"></i>
+                  <span class="subject-name">Mathematics</span>
+                </div>
+                <span class="completion-percentage">92%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 92%; background: #10b981"></div>
+              </div>
+              <div class="subject-details">
+                <span>23/25 Topics Completed</span>
+              </div>
+            </div>
+
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-cpu"></i>
+                  <span class="subject-name">Physics</span>
+                </div>
+                <span class="completion-percentage">78%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 78%; background: #3b82f6"></div>
+              </div>
+              <div class="subject-details">
+                <span>18/23 Topics Completed</span>
+              </div>
+            </div>
+
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-flask"></i>
+                  <span class="subject-name">Chemistry</span>
+                </div>
+                <span class="completion-percentage">85%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 85%; background: #8b5cf6"></div>
+              </div>
+              <div class="subject-details">
+                <span>17/20 Topics Completed</span>
+              </div>
+            </div>
+
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-code"></i>
+                  <span class="subject-name">Programming</span>
+                </div>
+                <span class="completion-percentage">95%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 95%; background: #f59e0b"></div>
+              </div>
+              <div class="subject-details">
+                <span>19/20 Topics Completed</span>
+              </div>
+            </div>
+
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-chat-dots"></i>
+                  <span class="subject-name">English</span>
+                </div>
+                <span class="completion-percentage">70%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 70%; background: #ef4444"></div>
+              </div>
+              <div class="subject-details">
+                <span>14/20 Topics Completed</span>
+              </div>
+            </div>
+
+            <div class="subject-progress-card">
+              <div class="subject-header">
+                <div class="subject-info">
+                  <i class="ph ph-gear"></i>
+                  <span class="subject-name">Engineering Graphics</span>
+                </div>
+                <span class="completion-percentage">88%</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 88%; background: #06b6d4"></div>
+              </div>
+              <div class="subject-details">
+                <span>15/17 Topics Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="study-streak-card">
+          <h3>🔥 Study Streak</h3>
+          <div class="streak-info">
+            <div class="streak-count">
+              <span class="streak-number">12</span>
+              <span class="streak-label">Days</span>
+            </div>
+            <div class="streak-calendar">
+              <div class="streak-day active">M</div>
+              <div class="streak-day active">T</div>
+              <div class="streak-day active">W</div>
+              <div class="streak-day active">T</div>
+              <div class="streak-day active">F</div>
+              <div class="streak-day active">S</div>
+              <div class="streak-day">S</div>
+            </div>
+          </div>
+          <p class="streak-message">Keep it up! You're on a great streak 🎉</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="timeline-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">Schedule Timetable</h2>
+        <button class="icon-btn" onclick="goToPage('master-timetable')">
+          <i class="ph ph-calendar-dots"></i>
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="week-selector"></div>
+        <div class="timeline"></div>
+      </div>
+    </div>
+
+    <div id="master-timetable-page" class="page">
+      <header class="app-header">
+        <button
+          class="icon-btn"
+          id="masterBackBtn"
+          onclick="goToPage('timeline')"
+        >
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title" id="masterPageTitle">Master Timetable</h2>
+        <button class="icon-btn">
+          <i class="ph ph-calendar-check"></i>
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="master-timetable-header">
+          <h3 class="master-title" id="masterMainTitle">
+            📚 All Division Schedules
+          </h3>
+          <p class="master-subtitle" id="masterSubtitle">
+            Select a day to view divisions
+          </p>
+        </div>
+
+        <div class="master-day-selector">
+          <button
+            class="master-day-btn active"
+            data-day="MON"
+            onclick="handleMasterDayChange('MON')"
+          >
+            Mon
+          </button>
+          <button
+            class="master-day-btn"
+            data-day="TUE"
+            onclick="handleMasterDayChange('TUE')"
+          >
+            Tue
+          </button>
+          <button
+            class="master-day-btn"
+            data-day="WED"
+            onclick="handleMasterDayChange('WED')"
+          >
+            Wed
+          </button>
+          <button
+            class="master-day-btn"
+            data-day="THU"
+            onclick="handleMasterDayChange('THU')"
+          >
+            Thu
+          </button>
+          <button
+            class="master-day-btn"
+            data-day="FRI"
+            onclick="handleMasterDayChange('FRI')"
+          >
+            Fri
+          </button>
+          <button
+            class="master-day-btn"
+            data-day="SAT"
+            onclick="handleMasterDayChange('SAT')"
+          >
+            Sat
+          </button>
+        </div>
+
+        <div class="master-content-area" id="masterContentArea">
+          <div class="divisions-grid" id="divisionsGrid"></div>
+          <div
+            class="division-schedule-view"
+            id="divisionScheduleView"
+            style="display: none"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Study Materials Subjects Page -->
+    <div id="study-materials-subjects-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">Study Materials</h2>
+        <button class="icon-btn">
+          <i class="ph ph-backpack"></i>
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="section-header">
+          <h3>Select Subject</h3>
+        </div>
+        <div class="subjects-materials-grid" id="subjectsMaterialsGrid">
+          <div class="notification-empty">
+            <p>Loading subjects...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject Materials Detail Page -->
+    <div id="subject-materials-detail-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('study-materials-subjects')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title" id="subjectMaterialsTitle">Subject Materials</h2>
+        <button class="icon-btn">
+          <i class="ph ph-file-text"></i>
+        </button>
+      </header>
+
+      <div class="container">
+        <div
+          class="subject-materials-detail-grid"
+          id="subjectMaterialsDetailGrid"
+        >
+          <div class="notification-empty">
+            <p>Loading materials...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="profile-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">My Profile</h2>
+        <button class="icon-btn" onclick="toggleEditMode()">
+          <i class="ph ph-pencil-simple" id="editIcon"></i>
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="profile-header-section">
+          <div class="profile-photo-container">
+            <div class="profile-photo" id="profilePhoto">
+              <i class="ph ph-user"></i>
+            </div>
+            <button
+              class="photo-edit-btn"
+              id="photoEditBtn"
+              onclick="openPhotoSelector()"
+              style="display: none"
+            >
+              <i class="ph ph-camera"></i>
+            </button>
+            <input
+              type="file"
+              id="photoInput"
+              accept="image/*"
+              style="display: none"
+              onchange="handlePhotoUpload(event)"
+            />
+          </div>
+
+          <div class="profile-name-section">
+            <h2 class="profile-display-name" id="profileDisplayName">
+              Student Name
+            </h2>
+            <input
+              type="text"
+              class="profile-edit-name"
+              id="profileEditName"
+              style="display: none"
+              placeholder="Enter your name"
+            />
+          </div>
+        </div>
+
+        <div class="profile-info-card">
+          <h3 class="info-card-title">Student Information</h3>
+          <div class="info-item">
+            <span class="info-label">Branch</span>
+            <span class="info-value" id="profileBranch">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Division</span>
+            <span class="info-value" id="profileDivision">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Year</span>
+            <span class="info-value" id="profileYear">-</span>
+          </div>
+        </div>
+
+        <div class="profile-actions" id="profileActions" style="display: none">
+          <button class="btn-primary" onclick="saveProfileChanges()">
+            Save Changes
+            <div class="icon">
+              <svg
+                height="24"
+                width="24"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M0 0h24v24H0z" fill="none"></path>
+                <path
+                  d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
+          </button>
+          <button class="btn-secondary" onclick="cancelProfileEdit()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="zen-ai-page" class="page">
+      <div class="zen-ai-loading-overlay" id="zenAILoadingOverlay">
+        <img
+          src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3ctitle%3eZen Browser%3c/title%3e%3cpath fill='black' d='M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12m-12 9.846c5.438 0 9.846-4.408 9.846-9.846S17.438 2.154 12 2.154 2.154 6.562 2.154 12 6.562 21.846 12 21.846M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0m-8 6.462a6.462 6.462 0 1 0 0-12.924 6.462 6.462 0 0 0 0 12.924m0-1.847a4.615 4.615 0 1 0 0-9.23 4.615 4.615 0 0 0 0 9.23M15.692 12a3.692 3.692 0 1 1-7.384 0 3.692 3.692 0 0 1 7.384 0'/%3e%3c/svg%3e"
+          alt="Zen AI"
+          class="zen-ai-loading-logo"
+        />
+      </div>
+
+      <header class="app-header zen-ai-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">Zen AI</h2>
+        <button class="icon-btn" onclick="toggleChatHistory()">
+          <i class="ph ph-clock-clockwise"></i>
+        </button>
+      </header>
+
+      <div class="zen-ai-container">
+        <!-- Chat History Sidebar -->
+        <div class="chat-history-sidebar" id="chatHistorySidebar">
+          <div class="chat-history-header">
+            <h3>Chat History</h3>
+            <button class="btn-close-history" onclick="toggleChatHistory()">
+              <i class="ph ph-x"></i>
+            </button>
+          </div>
+          <div class="chat-history-list" id="chatHistoryList">
+            <div class="empty-history">
+              <p>No chat history yet</p>
+            </div>
+          </div>
+          <button class="btn-new-chat" onclick="startNewChat()">
+            <i class="ph ph-plus"></i> New Chat
+          </button>
+        </div>
+        <div
+          class="chat-history-backdrop"
+          id="chatHistoryBackdrop"
+          onclick="toggleChatHistory()"
+        ></div>
+
+        <div class="zen-ai-welcome" id="zenAIWelcome">
+          <div class="zen-ai-welcome-icon">
+            <img
+              src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3ctitle%3eZen Browser%3c/title%3e%3cpath fill='black' d='M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12m-12 9.846c5.438 0 9.846-4.408 9.846-9.846S17.438 2.154 12 2.154 2.154 6.562 2.154 12 6.562 21.846 12 21.846M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0m-8 6.462a6.462 6.462 0 1 0 0-12.924 6.462 6.462 0 0 0 0 12.924m0-1.847a4.615 4.615 0 1 0 0-9.23 4.615 4.615 0 0 0 0 9.23M15.692 12a3.692 3.692 0 1 1-7.384 0 3.692 3.692 0 0 1 7.384 0'/%3e%3c/svg%3e"
+              alt="Zen AI"
+              style="width: 80px; height: 80px"
+            />
+          </div>
+          <h2 class="zen-ai-welcome-title">Welcome to Zen AI</h2>
+          <p class="zen-ai-welcome-text">
+            Your intelligent study companion. Ask me anything about your
+            courses, schedules, or study tips!
+          </p>
+          <div class="zen-ai-suggestions">
+            <button
+              class="suggestion-chip"
+              onclick="sendSuggestion('What is my schedule for today?')"
+            >
+              📅 Today's Schedule
+            </button>
+            <button
+              class="suggestion-chip"
+              onclick="sendSuggestion('Give me study tips for exams')"
+            >
+              📚 Study Tips
+            </button>
+            <button
+              class="suggestion-chip"
+              onclick="sendSuggestion('How can I improve my productivity?')"
+            >
+              ⚡ Productivity Tips
+            </button>
+          </div>
+        </div>
+
+        <div class="zen-ai-chat-messages" id="zenAIChatMessages"></div>
+
+        <div class="zen-ai-input-container">
+          <div class="zen-ai-input-wrapper">
+            <textarea
+              class="zen-ai-input"
+              id="zenAIInput"
+              placeholder="Ask me anything..."
+              onkeypress="handleZenAIKeyPress(event)"
+              onpaste="handleZenAIPaste(event)"
+              rows="1"
+              accept-charset="UTF-8"
+            ></textarea>
+            <button class="zen-ai-send-btn" onclick="sendZenAIMessage()">
+              <i class="ph ph-paper-plane-tilt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgent Notice Popup -->
+    <div class="notice-popup-overlay" id="urgentNoticePopup">
+      <div class="notice-popup urgent-popup">
+        <div class="notice-popup-header urgent-header">
+          <h3>🚨 Urgent Notice</h3>
+        </div>
+        <div class="notice-popup-body">
+          <h4 id="urgentNoticeTitle"></h4>
+          <p id="urgentNoticeContent"></p>
+          <div
+            id="urgentNoticeAttachment"
+            class="notice-popup-attachment"
+          ></div>
+        </div>
+        <button
+          class="notice-popup-btn urgent-btn"
+          onclick="closeUrgentNotice()"
+        >
+          ✓ Got it!
+        </button>
+      </div>
+    </div>
+
+    <!-- Holiday Notice Popup -->
+    <div class="notice-popup-overlay" id="holidayNoticePopup">
+      <div class="notice-popup holiday-popup">
+        <div class="notice-popup-header holiday-header">
+          <h3>🎉 Holiday Notice</h3>
+        </div>
+        <div class="notice-popup-body">
+          <h4 id="holidayNoticeTitle"></h4>
+          <p id="holidayNoticeContent"></p>
+          <div
+            id="holidayNoticeAttachment"
+            class="notice-popup-attachment"
+          ></div>
+        </div>
+        <button
+          class="notice-popup-btn holiday-btn"
+          onclick="closeHolidayNotice()"
+        >
+          ✓ Understood!
+        </button>
+      </div>
+    </div>
+
+    <!-- Normal Notice Popup -->
+    <div class="notice-popup-overlay" id="normalNoticePopup">
+      <div class="notice-popup normal-popup">
+        <div class="notice-popup-header normal-header">
+          <h3>📢 Notice</h3>
+        </div>
+        <div class="notice-popup-body">
+          <h4 id="normalNoticeTitle"></h4>
+          <p id="normalNoticeContent"></p>
+          <div
+            id="normalNoticeAttachment"
+            class="notice-popup-attachment"
+          ></div>
+        </div>
+        <button
+          class="notice-popup-btn normal-btn"
+          onclick="closeNormalNotice()"
+        >
+          ✓ Got it!
+        </button>
+      </div>
+    </div>
+
+    <!-- Community Page -->
+    <div id="community-page" class="page">
+      <header class="app-header">
+        <button class="icon-btn" onclick="goToPage('home')">
+          <i class="ph ph-arrow-fat-left"></i>
+        </button>
+        <h2 class="page-title">Community Doubts</h2>
+        <div class="division-tag-header" id="communityFilterTag">
+          <i class="ph ph-users-three"></i>
+          <span id="communityFilterText">Loading...</span>
+        </div>
+      </header>
+
+      <div class="community-chat-container">
+        <div class="doubts-feed" id="doubtsFeed">
+          <div class="doubts-loading">
+            <div class="spinner"></div>
+            <p>Loading doubts...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="community-input-section">
+        <div class="attached-files-preview" id="attachedFilesPreview"></div>
+        <div class="community-input-bar">
+          <button class="attach-btn" onclick="document.getElementById('communityFileInput').click()">
+            <i class="ph ph-paperclip"></i>
+          </button>
+          <input
+            type="file"
+            id="communityFileInput"
+            accept="image/*,.pdf"
+            multiple
+            style="display: none"
+            onchange="handleCommunityFileSelect(event)"
+          />
+          <input
+            type="text"
+            id="communityDoubtInput"
+            class="community-text-input"
+            placeholder="Ask your doubt..."
+            maxlength="500"
+          />
+          <button class="send-btn" onclick="sendDoubtFromInput()">
+            <i class="ph ph-paper-plane-tilt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Doubt Modal -->
+    <div class="view-doubt-modal-overlay" id="viewDoubtModal">
+      <div class="view-doubt-modal">
+        <div class="view-doubt-header">
+          <h3 id="viewDoubtTitle">Doubt Details</h3>
+          <button class="modal-close-btn" onclick="closeViewDoubtModal()">
+            <i class="ph ph-x"></i>
+          </button>
+        </div>
+        <div class="view-doubt-body" id="viewDoubtBody">
+          <div class="doubt-details-loading">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+        <div class="view-doubt-reply-section">
+          <textarea
+            id="replyText"
+            class="reply-textarea"
+            placeholder="Write your response..."
+            rows="3"
+          ></textarea>
+          <button class="reply-btn" onclick="submitReply()">
+            <i class="ph ph-paper-plane-tilt"></i>
+            Reply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="fcm-client.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
